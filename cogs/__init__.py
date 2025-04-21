@@ -6,8 +6,8 @@ from discord import app_commands
 
 #add cogs here ⬇️
 try:
-    from . import (example)
-    COGS = [example.Example] 
+    from . import (status)
+    COGS = [status.Status] 
 except Exception as error:
     EventBus.signal("error", error, "Cogs", "Error while importing cogs", fatal=True)
 

@@ -7,5 +7,8 @@ ConfigTemplate = {
     "BOT.AUTOSYNC": True,
     "BOT.DEFAULTHELP": True,
     "BOT.INSTALLS.SERVER": True,
-    "BOT.INSTALLS.USER": True,
+    "BOT.INSTALLS.USER": False,
+    
+    "STATUS.TARGET.IP": "troll.ink",
+    "STATUS.CHANNEL": 0,
 }

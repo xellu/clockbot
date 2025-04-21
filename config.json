@@ -1,10 +1,15 @@
 {
     "SERVER.NAME": "mddb",
     "DEVMODE": true,
-    "BOT.TOKEN": "MTE3Mjk5MDQwODE1MDc2MTU0Mg.GgFScp._LIjEw6GLC2UyAdqYElcoC0k9xUsaid1lAIwlA",
+    
+    "BOT.TOKEN": "MTM2MzczMzg0MjA1NzIzNjUxMQ.G_515o.So0xYe3nqOSdeyfZfUoHI6QUP9qgvutUTUScY4",
     "BOT.PREFIX": "!",
     "BOT.AUTOSYNC": true,
+    
     "BOT.DEFAULTHELP": false,
     "BOT.INSTALLS.SERVER": true,
-    "BOT.INSTALLS.USER": true
+    "BOT.INSTALLS.USER": false,
+
+    "STATUS.TARGET.IP": "troll.ink",
+    "STATUS.CHANNEL": 1363744298440331466
 }
