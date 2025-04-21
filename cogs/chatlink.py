@@ -53,7 +53,7 @@ class ChatLink(commands.Cog):
         for msg in Puffer.chat_messages:
             if msg["type"] == "waypoint":
                 embed = Embed(
-                    title = f"[{msg["initial"]}] {msg["name"]}",
+                    title = f'[{msg["initial"]}] {msg["name"]}',
                     description=f"{self.bold_username(msg['username'])} has shared a waypoint.",
                     color = Colors.DEFAULT
                 )
