@@ -16,6 +16,7 @@ class Status(commands.Cog):
     def __init__(self):
         self.bot = Bot
         self.maintenance = False
+        self.last_state = None
         
         self.update_status.start()
     
@@ -52,8 +53,11 @@ class Status(commands.Cog):
                 await channel.edit(name=f"⚠️ Maintenance")
             case State.NETWORK_ERROR:
                 await channel.edit(name=f"❓ API Error")
-            
-        CommandLogger.ok(f"Status: updated server status to {state.name} ({players})")        
+        
+        if state != self.last_state:
+            CommandLogger.ok(f"Status: updated server status to {state.name} ({players})")        
+
+        self.last_state = state
 
     #MAINTENANCE ----------------------------------
     @app_commands.command(name="maintenance", description="Sets the server into a maintenance state")
