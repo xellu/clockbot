@@ -150,7 +150,7 @@ class PufferPanelAdapter:
                     
                     match = CONN_REGEX.match(ln)
                     if match:
-                        logger.info(f"Connection message: {ln}")
+                        # logger.info(f"Connection message: {ln}")
                         timestamp, username, action = match.groups()
                         
                         username = self.fix_username(username)
