@@ -1,0 +1,10 @@
+{
+    "SERVER.NAME": "mddb",
+    "DEVMODE": true,
+    "BOT.TOKEN": "MTE3Mjk5MDQwODE1MDc2MTU0Mg.GgFScp._LIjEw6GLC2UyAdqYElcoC0k9xUsaid1lAIwlA",
+    "BOT.PREFIX": "!",
+    "BOT.AUTOSYNC": true,
+    "BOT.DEFAULTHELP": false,
+    "BOT.INSTALLS.SERVER": true,
+    "BOT.INSTALLS.USER": true
+}
