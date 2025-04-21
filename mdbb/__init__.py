@@ -12,6 +12,12 @@ CommandLogger = LoggingManager("MDBB.Commands")
 EventLogger = LoggingManager("MDBB.Events")
 Shell = ShellManager()
 
+class Colors:
+    DEFAULT = 0x5997FF
+    OK = 0x59FF6E
+    ERROR = 0xFF5959
+    WARNING = 0xFFC85F
+
 if not Config.get("BOT.DEFAULTHELP"):
     Bot.remove_command("help")
 

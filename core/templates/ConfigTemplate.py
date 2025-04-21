@@ -10,5 +10,6 @@ ConfigTemplate = {
     "BOT.INSTALLS.USER": False,
     
     "STATUS.TARGET.IP": "troll.ink",
-    "STATUS.CHANNEL": 0,
+    "STATUS.STATE.CHANNEL": 0,
+    "STATUS.ANNOUNCE.CHANNEL": 0
 }
