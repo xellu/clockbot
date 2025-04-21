@@ -1,4 +1,5 @@
 from ..logging import LoggingManager
+import asyncio
 
 logger = LoggingManager("Core.Events")
 
@@ -84,6 +85,35 @@ class EventManager:
 
         return True
     emit = signal
+    
+    def signal_async(self, event: str, *args, **kwargs):
+        """
+        Emit an event asynchronously.
+
+        Args:
+            event (str): The event to emit.
+
+        Returns:
+            None
+        """
+        if event not in self.events:
+            logger.debug(f"Event {event} bounced, no listeners registered (type 1)")
+            return False
+        
+        if self.bounce and len(self.events[event]) == 0:
+            logger.debug(f"Event {event} bounced, no listeners registered (type 2)")
+            return False
+        
+        for func in self.events[event]:
+            logger.debug(f"Calling event listener {func.__name__} for {event}")
+            asyncio.run(func(*args, **kwargs))
+
+        for func in self.globals:
+            logger.debug(f"Calling global event listener {func.__name__} for {event}")
+            asyncio.run(func(event, *args, **kwargs))
+
+        return True
+    emit_async = signal_async
 
     def dettach(self, event: str, func):
         """

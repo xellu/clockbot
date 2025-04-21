@@ -18,10 +18,13 @@ class Status(commands.Cog):
         self.maintenance = False
         self.last_state = None
         
+        self.players_max = 0
+        self.players_online = 0
+        
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------
-    @tasks.loop(seconds=60)
+    @tasks.loop(seconds=90)
     async def update_status(self):
         r = requests.get(f"https://api.mcstatus.io/v2/status/java/{Config.get('STATUS.TARGET.IP')}")
         if r.status_code != 200:
@@ -34,19 +37,21 @@ class Status(commands.Cog):
         
         data = r.json()
         if data["online"]:
-            await self.set_channel_status(State.ONLINE, data["players"]["online"])
+            self.players_online = data["players"]["online"]
+            self.players_max = data["players"]["max"]
+            
+            await self.set_channel_status(State.ONLINE)
             return
         
-        #TODO: make maintenance work
         await self.set_channel_status(State.OFFLINE)
         
             
-    async def set_channel_status(self, state, players = None):
+    async def set_channel_status(self, state):
         channel = await self.bot.fetch_channel(Config.get("STATUS.STATE.CHANNEL"))
             
         match state:
             case State.ONLINE:
-                await channel.edit(name=f"{'🔥' if players > 10 else '🌐'} {players} Online")
+                await channel.edit(name=f"{'🔥' if self.players_online > 10 else '🟢'} Online: {self.players_online}")
             case State.OFFLINE:
                 await channel.edit(name=f"⛔ Server Offline")
             case State.MAINTENANCE:
@@ -55,7 +60,7 @@ class Status(commands.Cog):
                 await channel.edit(name=f"❓ API Error")
         
         if state != self.last_state:
-            CommandLogger.ok(f"Status: updated server status to {state.name} ({players})")        
+            CommandLogger.ok(f"Status: updated server status to {state.name} ({self.players_online}/{self.players_max})")        
 
         self.last_state = state
 
