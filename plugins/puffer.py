@@ -12,6 +12,9 @@ from core.events import EventManager
 
 logger = LoggingManager("Plugins.Puffer")
 
+CHAT_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> (.+)")
+CONN_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: (.+) (joined|left) the game")
+
 class PufferPanelAdapter:
     def __init__(self):
         self.token = self.login()
@@ -130,18 +133,38 @@ class PufferPanelAdapter:
                 # logger.debug(f"Console message: {data.get('data')}")
                 #[hh:mm:ss] [Server thread/INFO]: <username> message (may have unicode)\r\n
                 for ln in data.get("data", {}).get("logs", []):
-                    regex = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> (.+)")
-                    match = regex.match(ln)
+                    match = CHAT_REGEX.match(ln)
                     if match:
                         timestamp, username, message = match.groups()
                         
                         username = self.fix_username(username)
                         
                         self.chat_messages.append({
+                            "type": "chat",
                             "timestamp": timestamp,
+                            
                             "username": username,
-                            "message": message
+                            "message": message,
                         })
+                        continue
+                    
+                    match = CONN_REGEX.match(ln)
+                    if match:
+                        logger.info(f"Connection message: {ln}")
+                        timestamp, username, action = match.groups()
+                        
+                        username = self.fix_username(username)
+                        
+                        self.chat_messages.append({
+                            "type": "join" if action == "joined" else "leave",
+                            "timestamp": timestamp,
+                            
+                            "username": username
+                        })
+                        continue
+                    
+                    
+                    
                     
             
             case _:

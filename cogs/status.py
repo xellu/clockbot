@@ -24,7 +24,7 @@ class Status(commands.Cog):
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------
-    @tasks.loop(seconds=90)
+    @tasks.loop(seconds=300)
     async def update_status(self):
         r = requests.get(f"https://api.mcstatus.io/v2/status/java/{Config.get('STATUS.TARGET.IP')}")
         if r.status_code != 200:

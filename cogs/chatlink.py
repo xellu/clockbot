@@ -19,22 +19,32 @@ class ChatLink(commands.Cog):
         
         content = ""
         for msg in Puffer.chat_messages:
-            username = ""
-            if " " in msg["username"]:
-                temp = msg["username"].split(" ")
-                for i in range(len(temp)):
-                    if i == len(temp)-1:
-                        username += f"**{temp[i]}:**"
-                    else:
-                        username += f"{temp[i]} "
-            else:
-                username = f"**{msg['username']}:**"
+            if msg["type"] == "chat":
+                username = ""
+                if " " in msg["username"]:
+                    temp = msg["username"].split(" ")
+                    for i in range(len(temp)):
+                        if i == len(temp)-1:
+                            username += f"**{temp[i]}:**"
+                        else:
+                            username += f"{temp[i]} "
+                else:
+                    username = f"**{msg['username']}:**"
+                    
+                content += f"{username} {msg['message']}\n"
+                Puffer.chat_messages.remove(msg)
                 
-            content += f"{username} {msg['message']}\n"
-            Puffer.chat_messages.remove(msg)
-            
         if content:
             await self.channel.send(content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere"))
+            
+        for msg in Puffer.chat_messages:
+            if msg["type"] in ["join", "leave"]:
+                embed = Embed(
+                    description = f"{msg['username']} has joined the server." if msg["type"] == "join" else f"{msg['username']} has left the server.",
+                    color = Colors.OK if msg["type"] == "join" else Colors.ERROR
+                )
+                await self.channel.send(embed=embed)
+                Puffer.chat_messages.remove(msg)
             
     @commands.Cog.listener()
     async def on_message(self, msg):
