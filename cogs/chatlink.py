@@ -12,6 +12,19 @@ class ChatLink(commands.Cog):
         
         self.check_chatlink.start()
         
+    def bold_username(self, name):
+        username = ""
+        if " " in name:
+            temp = name.split(" ")
+            for i in range(len(temp)):
+                if i == len(temp)-1:
+                    username += f"**{temp[i]}:**"
+                else:
+                    username += f"{temp[i]} "
+        else:
+            username = f"**{name}:**"
+        return username
+        
     @tasks.loop(seconds=1)
     async def check_chatlink(self):
         if not Puffer.chat_messages:
@@ -20,16 +33,7 @@ class ChatLink(commands.Cog):
         content = ""
         for msg in Puffer.chat_messages:
             if msg["type"] == "chat":
-                username = ""
-                if " " in msg["username"]:
-                    temp = msg["username"].split(" ")
-                    for i in range(len(temp)):
-                        if i == len(temp)-1:
-                            username += f"**{temp[i]}:**"
-                        else:
-                            username += f"{temp[i]} "
-                else:
-                    username = f"**{msg['username']}:**"
+                username = self.bold_username(msg["username"])
                     
                 content += f"{username} {msg['message']}\n"
                 Puffer.chat_messages.remove(msg)
@@ -43,6 +47,22 @@ class ChatLink(commands.Cog):
                     description = f"{msg['username']} has joined the server." if msg["type"] == "join" else f"{msg['username']} has left the server.",
                     color = Colors.OK if msg["type"] == "join" else Colors.ERROR
                 )
+                await self.channel.send(embed=embed)
+                Puffer.chat_messages.remove(msg)
+            
+        for msg in Puffer.chat_messages:
+            if msg["type"] == "waypoint":
+                embed = Embed(
+                    title = f"[{msg["initial"]}] {msg["name"]}",
+                    description=f"{self.bold_username(msg['username'])} has shared a waypoint.",
+                    color = Colors.DEFAULT
+                )
+                embed.set_author(name="Waypoint")
+                embed.add_field(
+                    name = "Location",
+                    value = f"**X:** {msg['x']} **Y:** {msg['y']} **Z:** {msg['z']} `{'Nether' if 'nether' in msg['dimension_id'].lower() else ('End' if 'end' in msg['dimension_id'].lower() else 'Overworld')}`",    
+                )
+                
                 await self.channel.send(embed=embed)
                 Puffer.chat_messages.remove(msg)
             

@@ -51,7 +51,7 @@ class Status(commands.Cog):
             
         match state:
             case State.ONLINE:
-                await channel.edit(name=f"{'🔥' if self.players_online > 10 else '🟢'} Online: {self.players_online}")
+                await channel.edit(name=f"{'🔥' if self.players_online >= 10 else '🟢'} Online: {self.players_online}")
             case State.OFFLINE:
                 await channel.edit(name=f"⛔ Server Offline")
             case State.MAINTENANCE:

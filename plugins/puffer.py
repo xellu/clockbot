@@ -12,7 +12,13 @@ from core.events import EventManager
 
 logger = LoggingManager("Plugins.Puffer")
 
+#[13:23:11] [Server thread/INFO]: <username> message
 CHAT_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> (.+)")
+
+#[13:23:06] [Server thread/INFO]: <username> xaero-waypoint:name:initial:x:y:z:color_id:disabled:type:dimension_id
+WP_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> xaero-waypoint:(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+)")
+
+#[13:25:08] [Server thread/INFO]: username joined/left the game
 CONN_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: (.+) (joined|left) the game")
 
 class PufferPanelAdapter:
@@ -133,6 +139,28 @@ class PufferPanelAdapter:
                 # logger.debug(f"Console message: {data.get('data')}")
                 #[hh:mm:ss] [Server thread/INFO]: <username> message (may have unicode)\r\n
                 for ln in data.get("data", {}).get("logs", []):
+                    match = WP_REGEX.match(ln)
+                    if match:
+                        # logger.info(f"Waypoint message: {ln}")
+                        timestamp, username, name, initial, x, y, z, _, _, _, dimension_id = match.groups()
+                        username = self.fix_username(username)
+
+                        self.chat_messages.append({
+                            "type": "waypoint",
+                            "timestamp": timestamp,
+                            
+                            "username": username,
+                            
+                            "name": name,
+                            "initial": initial,
+                            "x": x,
+                            "y": y,
+                            "z": z,
+                            "dimension_id": dimension_id,
+                        })
+
+                        continue
+                    
                     match = CHAT_REGEX.match(ln)
                     if match:
                         timestamp, username, message = match.groups()
