@@ -23,8 +23,8 @@ CONN_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: (.+) (
 
 class PufferPanelAdapter:
     def __init__(self):
-        self.token = self.login()
-        
+        self.token = None
+                
         self.last_heartbeat = None
         self.ws = None
         
@@ -66,6 +66,7 @@ class PufferPanelAdapter:
         if self.ws:
             return
         
+        self.token = self.login()
         url = f"{Config.get('PUFFER.URL').replace('http', 'ws')}/proxy/daemon/socket/{Config.get('PUFFER.SERVER.ID')}"
         logger.info(f"Resolving WebSocket URL: {url}")
         self.ws = websocket.WebSocketApp(url,
