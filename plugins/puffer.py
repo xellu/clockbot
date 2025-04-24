@@ -81,6 +81,12 @@ class PufferPanelAdapter:
         self.ws.run_forever()
         
         logger.error("WebSocket connection closed. Attempting to reconnect...")
+        self.chat_messages.append({
+            "type": "chat",
+            "timestamp": time.time(),
+            "username": self.fix_username("[SYS] ChatLink"),
+            "message": "Disconnected from API"
+        })
         
         self.connected = False
         self.ws = None
@@ -104,6 +110,12 @@ class PufferPanelAdapter:
         Reconnect to the PufferPanel WebSocket API.
         """
         logger.info("Attempting to reconnect to PufferPanel WebSocket API...")
+        self.chat_messages.append({
+            "type": "chat",
+            "timestamp": time.time(),
+            "username": self.fix_username("[SYS] ChatLink"),
+            "message": "Reconnecting..."
+        })
         
         if self.ws:
             self.ws.close()
@@ -207,6 +219,12 @@ class PufferPanelAdapter:
         
         self.connected = True
         logger.ok("Connected to PufferPanel WebSocket API.")
+        self.chat_messages.append({
+            "type": "chat",
+            "timestamp": time.time(),
+            "username": self.fix_username("[SYS] ChatLink"),
+            "message": "Connected to API"
+        })
     
     def on_error(self, ws, error):
         """
@@ -223,6 +241,7 @@ class PufferPanelAdapter:
             "§c★§r": "`⭐ Admin`",
             "§aD§r": "`💖 Donator`",
             "[AFK]": "`💤 AFK`",
+            "[SYS]": "`⚙️ System`",
         }
         
         for role, replacement in roles.items():

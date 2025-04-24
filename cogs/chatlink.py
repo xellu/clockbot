@@ -101,8 +101,22 @@ class ChatLink(commands.Cog):
         #     }
         # ]
         
-        content = [
-            {
+        content = []
+        
+        if msg.reference:
+            reply_msg = await msg.channel.fetch_message(msg.reference.message_id)
+            text = f"{reply_msg.author.display_name}: {reply_msg.content}" if reply_msg.content else f"Replying to {reply_msg.author.display_name}"
+            text = f"{text[:97]}..." if len(text) > 100 else text
+            content.append({
+                "color": "#358BFF",
+                "text": "[Discord]"
+            })
+            content.append({
+                "color": "#B3B3B3",
+                "text": f" ⬊ {text}\n"
+            })
+    
+        content += [{
                 "color": "#358BFF",
                 "text": "[Discord]"
             },
@@ -112,9 +126,8 @@ class ChatLink(commands.Cog):
             },
             {
                 "color": "#FFFFFF",
-                "text": f" {msg.content} "
-            }
-        ]
+                "text": f" {msg.content} " if msg.content else " "
+        }]
         
         if msg.attachments:
             for i, attachment in enumerate(msg.attachments):
