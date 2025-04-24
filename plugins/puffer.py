@@ -31,6 +31,9 @@ CONN_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: (.+) (
 # [07:30:34] [spark-worker-pool-1-thread-1/INFO]: [⚡]  20.0, 20.0, 20.0, 20.0, *20.0
 TPS_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[spark-worker-pool-\d+-thread-\d+/INFO\]: \[⚡\] (.+?), (.+?), (.+?), (.+?), (.+)")
 
+# [08:08:40] [Server thread/INFO]: There are 2 of a max of 50 players online: SUlClDAL_St, §c★§r Xelluu
+LIST_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: There are (\d+) of a max of (\d+) players online: (.+)")
+
 class PufferPanelAdapter:
     def __init__(self):
         self.token = None
@@ -50,6 +53,7 @@ class PufferPanelAdapter:
         self.players = {
             "online": 0,
             "max": 0,
+            "players": [],
             "last_updated": 0,
         }
         
@@ -242,6 +246,21 @@ class PufferPanelAdapter:
                         
                         self.tps = {
                             "tps": float(tps1.replace("*", "")),
+                            "last_updated": time.time(),
+                        }
+                        
+                        continue
+                    
+                    #HANDLE PLAYER LIST
+                    match = LIST_REGEX.match(ln)
+                    if match:
+                        # logger.info(f"Player list message: {ln}")
+                        timestamp, online, max, players = match.groups()
+                        
+                        self.players = {
+                            "online": int(online),
+                            "max": int(max),
+                            "players": [self.fix_username(player) for player in players.split(", ")],
                             "last_updated": time.time(),
                         }
                         

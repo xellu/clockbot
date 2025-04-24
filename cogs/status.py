@@ -123,6 +123,7 @@ class Status(commands.Cog):
     #SERVER INFO----------------------------------
     @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")
     @app_commands.allowed_contexts(guilds=True, private_channels=True)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild.id if i.guild else i.user.id))
     async def tps_command(self, ctx):
         if not Config.get("MODULES.STATUS"):
             await ctx.response.send_message(embed=Embed(
@@ -160,3 +161,47 @@ class Status(commands.Cog):
             color = Colors.DEFAULT
         ))
             
+    @app_commands.command(name="online", description="Lists the players currently online")
+    @app_commands.allowed_contexts(guilds=True, private_channels=True)
+    @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild.id if i.guild else i.user.id))
+    async def online_command(self, ctx):
+        if not Config.get("MODULES.STATUS"):
+            await ctx.response.send_message(embed=Embed(
+                title = "Online Players",
+                description = "❌ This command is disabled",
+                color = Colors.ERROR
+            ))
+            return
+        
+        
+        await ctx.response.defer(thinking=True)
+    
+        Puffer.execute_command("list")
+        
+        online = {
+            "players": [],
+            "online": None,
+            "max": None,
+            "expire": time.time()+5
+        }
+        while True:
+            if time.time() > online["expire"]:
+                break
+            
+            if time.time() - Puffer.players["last_updated"] < 10:
+                online = Puffer.players
+                break
+            
+        if online["online"] is None:
+            await ctx.followup.send(embed=Embed(
+                title = "Online Players",
+                description = "❌ Failed to get player data",
+                color = Colors.ERROR
+            ))
+            return
+        
+        await ctx.followup.send(embed=Embed(
+            title = "Online Players",
+            description = f"""*There are {online["online"]} players online out of {online["max"]} max players*\n\n{', '.join(online["players"])}\n""",
+            color = Colors.DEFAULT
+        ))
