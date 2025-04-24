@@ -130,7 +130,7 @@ class Status(commands.Cog):
                 title = "Server Status",
                 description = "❌ This command is disabled",
                 color = Colors.ERROR
-            ))
+            ), ephemeral=True)
             return
         
         
@@ -170,7 +170,7 @@ class Status(commands.Cog):
                 title = "Online Players",
                 description = "❌ This command is disabled",
                 color = Colors.ERROR
-            ))
+            ), ephemeral=True)
             return
         
         

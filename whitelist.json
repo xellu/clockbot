@@ -1,0 +1,212 @@
+{
+    "message_id": 0,
+    "categories": [
+        {
+            "name": "Welcome to Clockwork!",
+            "questions": [
+                {
+                    "id": "username",
+                    "type": "mc_username",
+                    "title": "Your Minecraft Username",
+                    "description": "Please send your Minecraft username in the chat. We will use this to whitelist you on the server."
+                }
+            ]
+        },
+        {
+            "name": "About You",
+            "questions": [
+                {
+                    "id": "age",
+                    "type": "select_one",
+                    "title": "Your Age",
+                    "description": "Please select your age from the list below.",
+                    "options": [
+                        {
+                            "value": "13 or younger",
+                            "points": -999
+                        },
+                        {
+                            "value": "14-15",
+                            "points": 0
+                        },
+                        {
+                            "value": "16-17",
+                            "points": 1
+                        },
+                        {
+                            "value": "18 or older",
+                            "points": 2
+                        }
+                    ]
+                },
+                {
+                    "id": "region",
+                    "type": "select_one",
+                    "title": "Your Region",
+                    "description": "Please select your region from the list below.",
+                    "options": [
+                        {
+                            "value": "Europe",
+                            "points": 0
+                        },
+                        {
+                            "value": "North America",
+                            "points": 0
+                        },
+                        {
+                            "value": "South America",
+                            "points": 0
+                        },
+                        {
+                            "value": "Asia",
+                            "points": 0
+                        },
+                        {
+                            "value": "Oceania",
+                            "points": 0
+                        },
+                        {
+                            "value": "Africa",
+                            "points": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "found_us",
+                    "type": "select_multiple",
+                    "title": "How did you find out about us?",
+                    "description": "Please select all that apply.",
+                    "options": [
+                        {
+                            "value": "Reddit",
+                            "points": 0
+                        },
+                        {
+                            "value": "Google Search",
+                            "points": 0
+                        },
+                        {
+                            "value": "Youtube",
+                            "points": 0
+                        },
+                        {
+                            "value": "TikTok/Instagram",
+                            "points": 0
+                        },
+                        {
+                            "value": "Friend",
+                            "points": 0
+                        }
+                    ],
+                    "other": true
+                }
+            ]
+        },
+        {
+            "name": "Additional Questions",
+            "questions": [
+                {
+                    "id": "why_join",
+                    "type": "text",
+                    "title": "What interests you about this SMP?",
+                    "description": "This is a free-form text question.",
+                    "points": 3, 
+                    "optional": true
+                },
+                {
+                    "id": "played_on_other_smp",
+                    "type": "select_one",
+                    "title": "Have you played on any other SMPs before?",
+                    "description": "Please select one of the options below.",
+                    "options": [
+                        {
+                            "value": "Yes",
+                            "points": 1
+                        },
+                        {
+                            "value": "No",
+                            "points": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "played_with_create",
+                    "type": "select_one",
+                    "title": "Have you played with the Create mod before?",
+                    "description": "Please select one of the options below.",
+                    "options": [
+                        {
+                            "value": "Yes",
+                            "points": 1
+                        },
+                        {
+                            "value": "No",
+                            "points": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "good_at",
+                    "type": "select_multiple",
+                    "title": "What are you good at?",
+                    "description": "Please select all that apply.",
+                    "options": [
+                        {
+                            "value": "Engineering (Create Mod, Redstone, etc.)",
+                            "points": 1
+                        },
+                        {
+                            "value": "Building, Design",
+                            "points": 1
+                        },
+                        {
+                            "value": "Leadership, Community Management",
+                            "points": 1
+                        },
+                        {
+                            "value": "Exploration",
+                            "points": 1
+                        }
+                    ],
+                    "other": true
+                },
+                {
+                    "id": "join_team",
+                    "type": "select_one",
+                    "title": "Do you want to be a part of any city/town?",
+                    "description": "Please select one of the options below.",
+                    "options": [
+                        {
+                            "value": "Yes - I want to join an existing town",
+                            "points": 1
+                        },
+                        {
+                            "value": "Yes - I want to create my own town",
+                            "points": 1
+                        },
+                        {
+                            "value": "No",
+                            "points": 0
+                        }
+                    ]
+                },
+                {
+                    "id": "friends_on_smp",
+                    "type": "text",
+                    "title": "Do you have any friends on the server?",
+                    "description": "This is a free-form text question.",
+                    "points": 1,
+                    "optional": true
+                },
+                {
+                    "id": "note",
+                    "type": "text",
+                    "title": "Anything else you'd want us to know?",
+                    "description": "This is a free-form text question.",
+                    "points": 1,
+                    "optional": true
+                }
+            ]
+        }
+    ]
+}

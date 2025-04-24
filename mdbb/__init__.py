@@ -1,6 +1,6 @@
 from core.bot import Bot, Tree
 from core.bot import Tree as Slash
-from core import Config
+from core import Config, DB
 from core.events import EventBus
 from core.logging import LoggingManager
 from .shell import ShellManager

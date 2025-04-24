@@ -1,6 +1,6 @@
 import json
 import os
-from ..events import EventBus
+from .events import EventBus
 
 
 class ConfigManager:

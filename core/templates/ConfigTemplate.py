@@ -9,6 +9,9 @@ ConfigTemplate = {
     "BOT.INSTALLS.SERVER": True, #whether to allow the bot to be installed on the server
     "BOT.INSTALLS.USER": False, #whether to allow users to install it as "user install"
     
+    #MongoDB settings
+    "MONGO.URL": "mongodb://localhost:27017", #mongodb connection uri
+    
     #PufferPanel credentials
     "PUFFER.URL": "", #root url
     "PUFFER.SERVER.ID": "", #server id for the minecraft server (this is the server id in the puffer panel)
@@ -19,6 +22,7 @@ ConfigTemplate = {
     #Modules - Set to True to enable, False to disable
     "MODULES.STATUS": True,
     "MODULES.CHATLINK": True,
+    "MODULES.WHITELIST": True,
     
     #Status module settings
     "STATUS.TARGET.IP": "troll.ink", #ip or domain of the server to be monitored

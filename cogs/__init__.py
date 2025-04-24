@@ -6,8 +6,8 @@ from discord import app_commands
 
 #add cogs here ⬇️
 try:
-    from . import (status, chatlink)
-    COGS = [status.Status, chatlink.ChatLink] 
+    from . import (status, chatlink, whitelist)
+    COGS = [status.Status, chatlink.ChatLink, whitelist.Whitelist] 
 except Exception as error:
     EventBus.signal("error", error, "Cogs", "Error while importing cogs", fatal=True)
 

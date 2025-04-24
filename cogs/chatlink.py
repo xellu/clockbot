@@ -1,8 +1,12 @@
 from discord.ext import commands, tasks
 from discord import app_commands, Embed
 import json
+import time
 
-from mdbb import Bot, Config, CommandLogger, Colors
+from mdbb import Bot, Config, CommandLogger, Colors, DB
+from core.utils import get_mc_username, get_mc_uuid, random_str
+from core.templates.Messages import migration_notice
+
 from plugins.puffer import Puffer
 
 class ChatLink(commands.Cog):
@@ -44,6 +48,7 @@ class ChatLink(commands.Cog):
             
         for msg in Puffer.chat_messages:
             if msg["type"] in ["join", "leave"]:
+                if msg["type"] == "join": await self.on_join(msg["username"])
                 embed = Embed(
                     description = f"{msg['username']} has joined the server." if msg["type"] == "join" else f"{msg['username']} has left the server.",
                     color = Colors.OK if msg["type"] == "join" else Colors.ERROR
@@ -118,3 +123,33 @@ class ChatLink(commands.Cog):
                 })
                 
         Puffer.execute_command(f"/tellraw @a {json.dumps(content)}")
+        
+    async def on_join(self, username):
+        username = username.split(" ")[len(username.split(" ")) - 1]
+        uuid = get_mc_uuid(username)
+        if not uuid:
+            return CommandLogger.warn(f"Failed to get UUID for {username}")
+        
+        user = DB.get("clockbot").users.find_one({"minecraft": uuid})
+        if user:
+            #update user's last seen time
+            DB.get("clockbot").users.update_one({"minecraft": uuid}, {"$set": {"last_seen": time.time()}})
+            return
+       
+        #handle user linking here
+        code = DB.get("clockbot").codes.find_one({"uuid": uuid})
+        if code is None:
+            code = random_str(5)
+            DB.get("clockbot").codes.insert_one({
+                "uuid": uuid,
+                "code": code
+            })
+        else:
+            code = code["code"]
+            
+        link_message = migration_notice(code)
+        
+        CommandLogger.warn(f"User {username} ({uuid}) has joined the server and is not linked. Sending migration notice.")
+        if username != "Xelluu": return
+        
+        Puffer.execute_command(f"/tellraw {username} {json.dumps(link_message)}")
