@@ -12,6 +12,13 @@ from core.events import EventManager
 
 logger = LoggingManager("Plugins.Puffer")
 
+ROLES = {
+    "§c★§r": "`⭐ Admin`",
+    "§aD§r": "`💖 Donator`",
+    "[AFK]": "`💤 AFK`",
+    "[SYS]": "`⚙️ System`",
+}
+
 #[13:23:11] [Server thread/INFO]: <username> message
 CHAT_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> (.+)")
 
@@ -21,16 +28,30 @@ WP_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: <(.+?)> 
 #[13:25:08] [Server thread/INFO]: username joined/left the game
 CONN_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[Server thread/INFO\]: (.+) (joined|left) the game")
 
+# [07:30:34] [spark-worker-pool-1-thread-1/INFO]: [⚡]  20.0, 20.0, 20.0, 20.0, *20.0
+TPS_REGEX = re.compile(r"\[(\d{2}:\d{2}:\d{2})\] \[spark-worker-pool-\d+-thread-\d+/INFO\]: \[⚡\] (.+?), (.+?), (.+?), (.+?), (.+)")
+
 class PufferPanelAdapter:
     def __init__(self):
         self.token = None
                 
-        self.last_heartbeat = None
+        self.last_heartbeat = 0
         self.ws = None
         
         self.connected = False
         
         self.chat_messages = []
+        
+        self.tps = {
+            "tps": 0,
+            "last_updated": 0,
+        }
+        
+        self.players = {
+            "online": 0,
+            "max": 0,
+            "last_updated": 0,
+        }
         
     def login(self):
         """
@@ -99,11 +120,16 @@ class PufferPanelAdapter:
         Send a heartbeat to the PufferPanel WebSocket API.
         """
         while True:
-            if self.connected:
-                # logger.debug("Sending heartbeat...")
-                self.ws.send(json.dumps({"type": "stat"}))
+            if not self.connected or not self.ws:
+                time.sleep(1)
+                continue
             
-            time.sleep(3)
+            #send heartbeat
+            if time.time() - self.last_heartbeat > 3:
+                self.ws.send(json.dumps({"type": "stat"}))
+                self.last_heartbeat = time.time()
+            
+            time.sleep(1)
     
     async def reconnect(self):
         """
@@ -152,6 +178,8 @@ class PufferPanelAdapter:
                 # logger.debug(f"Console message: {data.get('data')}")
                 #[hh:mm:ss] [Server thread/INFO]: <username> message (may have unicode)\r\n
                 for ln in data.get("data", {}).get("logs", []):
+                    
+                    #HANDLE WAYPOINTS
                     match = WP_REGEX.match(ln)
                     if match:
                         # logger.info(f"Waypoint message: {ln}")
@@ -174,6 +202,7 @@ class PufferPanelAdapter:
 
                         continue
                     
+                    #HANDLE CHAT MESSAGES
                     match = CHAT_REGEX.match(ln)
                     if match:
                         timestamp, username, message = match.groups()
@@ -189,6 +218,7 @@ class PufferPanelAdapter:
                         })
                         continue
                     
+                    #HANDLE JOIN/LEAVE MESSAGES
                     match = CONN_REGEX.match(ln)
                     if match:
                         # logger.info(f"Connection message: {ln}")
@@ -202,6 +232,19 @@ class PufferPanelAdapter:
                             
                             "username": username
                         })
+                        continue
+                    
+                    #HANDLE TPS
+                    match = TPS_REGEX.match(ln)
+                    if match:
+                        # logger.info(f"TPS message: {ln}")
+                        timestamp, tps1, tps2, tps3, tps4, tps5 = match.groups()
+                        
+                        self.tps = {
+                            "tps": float(tps1.replace("*", "")),
+                            "last_updated": time.time(),
+                        }
+                        
                         continue
                     
             
@@ -229,20 +272,23 @@ class PufferPanelAdapter:
         """
         logger.error(f"WebSocket error: {error}")
     
-    
     def fix_username(self, name):
         """
         Fix the username to be more readable.
         """
-        roles = {
-            "§c★§r": "`⭐ Admin`",
-            "§aD§r": "`💖 Donator`",
-            "[AFK]": "`💤 AFK`",
-            "[SYS]": "`⚙️ System`",
-        }
         
-        for role, replacement in roles.items():
+        for role, replacement in ROLES.items():
             name = name.replace(role, replacement)
+    
+        return name
+    
+    def fix_username_reverse(self, name):
+        """
+        Fix the username to be more readable.
+        """
+        
+        for role, replacement in ROLES.items():
+            name = name.replace(replacement, role)
     
         return name
     

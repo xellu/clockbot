@@ -2,8 +2,11 @@ from discord.ext import commands, tasks
 from discord import app_commands, Embed
 
 from mdbb import Bot, Config, CommandLogger, Colors
+from plugins.puffer import Puffer
+
 import requests
 import enum
+import time
 
 class State(enum.Enum):
     NETWORK_ERROR = -1
@@ -116,3 +119,44 @@ class Status(commands.Cog):
         ))
         self.maintenance = False
         await self.set_channel_status(State.ONLINE)
+        
+    #SERVER INFO----------------------------------
+    @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")
+    @app_commands.allowed_contexts(guilds=True, private_channels=True)
+    async def tps_command(self, ctx):
+        if not Config.get("MODULE.STATUS"):
+            await ctx.response.send_message(embed=Embed(
+                title = "Server Status",
+                description = "❌ This command is disabled",
+                color = Colors.ERROR
+            ))
+            return
+        
+        
+        await ctx.response.defer(thinking=True)
+    
+        Puffer.execute_command("spark tps")
+        
+        tps = {"tps": None, "expire": time.time()+5}
+        while True:
+            if time.time() > tps["expire"]:
+                break
+            
+            if time.time() - Puffer.tps["last_updated"] < 10:
+                tps["tps"] = Puffer.tps["tps"]
+                break
+            
+        if tps["tps"] is None:
+            await ctx.followup.send(embed=Embed(
+                title = "Server Status",
+                description = "❌ Failed to get TPS data",
+                color = Colors.ERROR
+            ))
+            return
+        
+        await ctx.followup.send(embed=Embed(
+            title = "Server Status",
+            description = f"The current TPS is `{tps['tps']}`",
+            color = Colors.DEFAULT
+        ))
+            

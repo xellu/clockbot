@@ -76,38 +76,14 @@ class ChatLink(commands.Cog):
             return
         
         
-        #example command
-        #/tellraw @a ["",{"text":"[Discord]","color":"#358BFF"},{"text":" Username:","color":"#77C2FF"},{"text":" hello world!! "},{"text":"[attachment]","color":"yellow","clickEvent":{"action":"open_url","value":"https://map.troll.ink/"}}]
-        #data:
-        # [
-        #     {
-        #         "color": "#358BFF",
-        #         "text": "[Discord]"
-        #     },
-        #     {
-        #         "color": "#77C2FF",
-        #         "text": " Username:"
-        #     },
-        #     {
-        #         "text": " hello world!! "
-        #     },
-        #-------- attachments
-        #     {
-        #         "clickEvent": {
-        #             "action": "open_url",
-        #             "value": "https://map.troll.ink/"
-        #         },
-        #         "color": "yellow",
-        #         "text": "[attachment]"
-        #     }
-        # ]
-        
         content = []
         
         if msg.reference:
             reply_msg = await msg.channel.fetch_message(msg.reference.message_id)
             text = f"{reply_msg.author.display_name}: {reply_msg.content}" if reply_msg.content else f"Replying to {reply_msg.author.display_name}"
             text = f"{text[:97]}..." if len(text) > 100 else text
+            text = Puffer.fix_username_reverse(text)
+            
             content.append({
                 "color": "#358BFF",
                 "text": "[Discord]"
