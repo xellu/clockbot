@@ -21,6 +21,7 @@ class Status(commands.Cog):
         self.players_max = 0
         self.players_online = 0
         
+        if not Config.get("MODULE.STATUS"): return
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------

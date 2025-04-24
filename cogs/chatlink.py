@@ -10,6 +10,7 @@ class ChatLink(commands.Cog):
         self.bot = Bot
         self.channel = self.bot.get_channel(Config.get("CHATLINK.CHANNEL"))
         
+        if not Config.get("MODULES.CHATLINK"): return
         self.check_chatlink.start()
         
     def bold_username(self, name):

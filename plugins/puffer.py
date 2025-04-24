@@ -204,9 +204,6 @@ class PufferPanelAdapter:
                         })
                         continue
                     
-                    
-                    
-                    
             
             case _:
                 logger.warning(f"Unknown message type: {data.get('type')}")
