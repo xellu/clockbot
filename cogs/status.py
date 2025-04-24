@@ -202,6 +202,6 @@ class Status(commands.Cog):
         
         await ctx.followup.send(embed=Embed(
             title = "Online Players",
-            description = f"""*There are {online["online"]} players online out of {online["max"]} max players*\n\n{', '.join(online["players"])}\n""",
+            description = f"""*There are {online['online']} players online at this moment*\n\n{', '.join(online["players"])}\n""",
             color = Colors.DEFAULT
         ))
