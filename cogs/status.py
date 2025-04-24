@@ -24,7 +24,7 @@ class Status(commands.Cog):
         self.players_max = 0
         self.players_online = 0
         
-        if not Config.get("MODULE.STATUS"): return
+        if not Config.get("MODULES.STATUS"): return
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------
@@ -124,7 +124,7 @@ class Status(commands.Cog):
     @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")
     @app_commands.allowed_contexts(guilds=True, private_channels=True)
     async def tps_command(self, ctx):
-        if not Config.get("MODULE.STATUS"):
+        if not Config.get("MODULES.STATUS"):
             await ctx.response.send_message(embed=Embed(
                 title = "Server Status",
                 description = "❌ This command is disabled",

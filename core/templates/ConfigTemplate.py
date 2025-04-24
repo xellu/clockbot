@@ -17,8 +17,8 @@ ConfigTemplate = {
     
     
     #Modules - Set to True to enable, False to disable
-    "MODULE.STATUS": True,
-    "MODULE.CHATLINK": True,
+    "MODULES.STATUS": True,
+    "MODULES.CHATLINK": True,
     
     #Status module settings
     "STATUS.TARGET.IP": "troll.ink", #ip or domain of the server to be monitored
