@@ -9,6 +9,9 @@ logger = LoggingManager("Core.Utils")
 
 def get_mc_uuid(username):
     """Get the UUID of a Minecraft account by username"""
+    if not username:
+        return None
+    
     try:
         r = requests.get(f"https://mcprofile.io/api/v1/java/username/{username}")
         r.raise_for_status()
@@ -21,6 +24,9 @@ def get_mc_uuid(username):
     
 def get_mc_username(uuid):
     """Get the username of a Minecraft account by UUID"""
+    if not uuid:
+        return None
+    
     try:
         r = requests.get(f"https://mcprofile.io/api/v1/java/uuid/{uuid}")
         r.raise_for_status()

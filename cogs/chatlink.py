@@ -131,8 +131,9 @@ class ChatLink(commands.Cog):
             return CommandLogger.warn(f"Failed to get UUID for {username}")
         
         user = DB.get("clockbot").users.find_one({"minecraft": uuid})
-        if user:
+        if user and user["minecraft"]:
             #update user's last seen time
+            CommandLogger.info(f"User {username} ({uuid}) has joined the server, updating last seen time.")
             DB.get("clockbot").users.update_one({"minecraft": uuid}, {"$set": {"last_seen": time.time()}})
             return
        

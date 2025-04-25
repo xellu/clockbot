@@ -1,0 +1,151 @@
+from core import Config, DB
+from core.utils import get_mc_username, get_mc_uuid
+
+from core.templates.UserTemplate import UserTemplate, WLStatus
+
+from plugins.puffer import Puffer
+
+class UserActionResponse:
+    def __init__(self, ok: bool, error: str | None = None):
+        self.ok = ok
+        self.error = error
+
+
+class UserManager:
+    def __init__(self, discord = None, minecraft = None):
+        """
+        A class to manage user accounts.
+        
+        Parameters:
+            discord (int): Discord ID of the user.
+            minecraft (str): Minecraft username of the user.
+        
+        Raises:
+            ValueError: If neither discord nor minecraft is provided.
+        """
+        
+        self.discord = discord
+        self.minecraft = minecraft
+        
+        self.user = None
+        
+        if not discord and not minecraft:
+            raise ValueError("Discord ID or Minecraft username must be provided")
+        
+        self.load()
+        
+    def is_valid(self):
+        """Check if the user is valid."""
+        return self.user is not None
+    
+    def load(self):
+        if self.discord:
+            self.user = DB.get("clockbot").users.find_one({"discord": self.discord})
+        elif self.minecraft:
+            self.user = DB.get("clockbot").users.find_one({"minecraft": self.minecraft})
+    
+    def update(self):
+        """Update the user in the database."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        DB.get("clockbot").users.update_one({"discord": self.discord}, {"$set": self.user})
+        
+        return UserActionResponse(True)
+    
+    def get(self):
+        return self.user
+        
+    def link(self, minecraft):
+        """Link a Minecraft account to the user."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if self.user["minecraft"]:
+            return UserActionResponse(False, "User already has a linked Minecraft account")
+        
+        uuid = get_mc_uuid(minecraft)
+        if not uuid:
+            return UserActionResponse(False, "Invalid Minecraft username")
+        
+        if self.user["whitelist"]["status"] == WLStatus.APPROVED.value:
+            Puffer.execute_command(f"/whitelist add {minecraft}")
+        
+        self.user["minecraft"] = uuid
+        self.user["whitelist"]["status"] = WLStatus.APPROVED.value
+        self.update()
+        
+        return UserActionResponse(True)
+    
+    def unlink(self):
+        """Unlink the Minecraft account from the user."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        username = get_mc_username(self.user["minecraft"])
+        if self.user["whitelist"]["status"] == WLStatus.APPROVED.value and username:
+            Puffer.execute_command(f"/whitelist remove {username}")
+        
+        self.user["minecraft"] = None
+        self.update()
+        
+        return UserActionResponse(True)
+    
+    def relink(self, minecraft):
+        """Switches the Minecraft account linked to the user."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if not self.user["minecraft"]:
+            return UserActionResponse(False, "User does not have a linked Minecraft account")
+        
+        status = self.unlink()
+        if not status.ok:
+            return status
+        
+        return self.link(minecraft)
+    
+    def delete(self):
+        """Delete the user."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if self.user["whitelist"]["status"] == WLStatus.APPROVED.value and self.user["minecraft"]:
+            Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")
+            
+        DB.get("clockbot").users.delete_one({"discord": self.discord})
+        self.user = None
+        
+        return UserActionResponse(True)
+    
+    def create(self, discord = None, minecraft = None):
+        """Create a new user."""
+        if self.is_valid():
+            return UserActionResponse(False, "User already exists")
+        
+        uuid = get_mc_uuid(minecraft)
+        if not uuid:
+            return UserActionResponse(False, "Invalid Minecraft username")
+        
+        if self.discord is None and discord is None:
+            return UserActionResponse(False, "Discord ID must be provided")
+        
+        if self.minecraft is None and minecraft is None:
+            return UserActionResponse(False, "Minecraft username must be provided")
+        
+        if self.discord is None:
+            self.discord = discord
+            
+        if self.minecraft is None:
+            self.minecraft = minecraft
+        
+        self.user = UserTemplate()
+        self.user["discord"] = self.discord
+        self.user["minecraft"] = uuid
+        
+        self.user["whitelist"]["status"] = WLStatus.PENDING.value
+        
+        DB.get("clockbot").users.insert_one(self.user)
+        self.load()
+        
+        return UserActionResponse(True)
