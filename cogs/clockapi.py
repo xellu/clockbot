@@ -11,14 +11,7 @@ from core.utils import get_mc_username
 
 from plugins.puffer import Puffer
 
-WLApply = ConfigManager("whitelist.json") #questions for whitelist applications
-
-class WhitelistPlayerAction(enum.Enum):
-    ADD = "add"
-    REMOVE = "remove"
-    
-
-class Whitelist(commands.Cog):
+class ClockAPI(commands.Cog):
     def __init__(self):
         self.bot = Bot
 
