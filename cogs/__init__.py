@@ -6,8 +6,8 @@ from discord import app_commands
 
 #add cogs here ⬇️
 try:
-    from . import (status, chatlink, clockapi)
-    COGS = [status.Status, chatlink.ChatLink, clockapi.ClockAPI] 
+    from . import (status, chatlink, clockapi, whitelist)
+    COGS = [status.Status, chatlink.ChatLink, clockapi.ClockAPI, whitelist.Whitelist] 
 except Exception as error:
     EventBus.signal("error", error, "Cogs", "Error while importing cogs", fatal=True)
 

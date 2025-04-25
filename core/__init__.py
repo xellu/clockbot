@@ -9,6 +9,7 @@ import time
 import threading
 
 Config = ConfigManager("config.json", template=ConfigTemplate)
+WLConfig = ConfigManager("whitelist.json")
 
 Release = "1.0.0"
 

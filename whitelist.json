@@ -1,5 +1,10 @@
 {
     "message_id": 0,
+    "settings": {
+        "open": true,
+        "auto_accept": false,
+        "auto_accept_points": 7
+    },
     "categories": [
         {
             "name": "Welcome to Clockwork!",
@@ -110,7 +115,7 @@
                     "type": "text",
                     "title": "What interests you about this SMP?",
                     "description": "This is a free-form text question.",
-                    "points": 3, 
+                    "points": 3,
                     "optional": true
                 },
                 {
