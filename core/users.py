@@ -143,7 +143,28 @@ class UserManager:
         self.user["discord"] = self.discord
         self.user["minecraft"] = uuid
         
-        self.user["whitelist"]["status"] = WLStatus.PENDING.value
+        self.user["whitelist"]["status"] = WLStatus.INACTIVE.value
+        
+        DB.get("clockbot").users.insert_one(self.user)
+        self.load()
+        
+        return UserActionResponse(True)
+    
+    def create_unlinked(self, discord = None):
+        """Create a new user without linking a Minecraft account."""
+        if self.is_valid():
+            return UserActionResponse(False, "User already exists")
+        
+        if self.discord is None and discord is None:
+            return UserActionResponse(False, "Discord ID must be provided")
+        
+        if self.discord is None:
+            self.discord = discord
+            
+        self.user = UserTemplate()
+        self.user["discord"] = self.discord
+        
+        self.user["whitelist"]["status"] = WLStatus.INACTIVE.value
         
         DB.get("clockbot").users.insert_one(self.user)
         self.load()
