@@ -81,8 +81,8 @@ class PufferPanelAdapter:
         
         loop = asyncio.get_event_loop()
         
-        threading.Thread(target=loop.run_until_complete, args=(self.event_loop(),)).start()
-        threading.Thread(target=self.heartbeat).start()
+        threading.Thread(target=loop.run_until_complete, args=(self.event_loop(),), name="Adapter.Puffer.Loop").start()
+        threading.Thread(target=self.heartbeat, name="Adapter.Puffer.Heartbeat").start()
     
     async def event_loop(self):
         """
@@ -312,4 +312,6 @@ class PufferPanelAdapter:
         return name
     
 Puffer = PufferPanelAdapter()
-Puffer.connect()
+if Config.get("API.SOURCE").lower() == "puffer":
+    logger.info("Selected ChatLink channel: PufferPanel")
+    Puffer.connect()

@@ -18,7 +18,15 @@ ConfigTemplate = {
     "PUFFER.USER": "", #email for the account used for login
     "PUFFER.PASS": "", #account password
     
-    
+    #ClockworkCore credentials
+    "CWCORE.IP": "", #ip or domain of the server to be monitored
+    "CWCORE.PORT": 0, #port of the server to be monitored
+    "CWCORE.KEY": "", #api access key
+    "CWCORE.SECRET": "", #encryption secret
+
+    #API    
+    "API.SOURCE": "puffer", #source for the chat link (puffer, cwcore)
+
     #Modules - Set to True to enable, False to disable
     "MODULES.STATUS": True,
     "MODULES.CHATLINK": True,

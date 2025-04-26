@@ -28,7 +28,7 @@ class Whitelist(commands.Cog):
         except:
             CommandLogger.error("Whitelist: Failed to get apply category")
             
-        self.delete_old_applications.start()
+        # self.delete_old_applications.start()
             
 
     @app_commands.command(name="configwl", description="Configure the whitelist settings")

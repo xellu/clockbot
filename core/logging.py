@@ -85,7 +85,7 @@ class LoggingManager:
                     self.config = Config
                     if not Config.get("DEVMODE"):
                         return
-                    self.debug("Debug mode enabled")
+                    # self.debug("Debug mode enabled")
 
                     # print(buffer)
                     for msg in buffer:
