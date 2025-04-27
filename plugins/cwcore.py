@@ -137,8 +137,11 @@ class ClockworkCoreAdapter:
             
     def heartbeat(self):
         while True:
-            if not self.logged_in or not self.socket:
+            if not self.socket:
                 break
+            
+            if not self.logged_in:
+                continue
             
             if self.queue: #gradually empty the queue
                 self.send(**self.queue.pop(0))
