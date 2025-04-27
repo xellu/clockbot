@@ -218,7 +218,7 @@ class ClockworkCoreAdapter:
         
         # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
-        print(data)
+        logger.debug(data)
         
         data = data[len(b"clockwork$"):]
         data = data.rstrip(b"\n")
