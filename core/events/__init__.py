@@ -132,4 +132,17 @@ class EventManager:
         self.events[event].remove(func)
         logger.debug(f"Removed event listener {func.__name__} for {event}")
 
+    def register(self, event, func):
+        """
+        Register an event listener.
+
+        Args:
+            event (str): The event to register the listener for.
+            func: The function to register.
+
+        Returns:
+            None
+        """
+        self.on(event)(func)
+
 EventBus = EventManager()

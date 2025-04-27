@@ -3,7 +3,8 @@ from core.utils import get_mc_username, get_mc_uuid
 
 from core.templates.UserTemplate import UserTemplate, WLStatus
 
-from plugins.puffer import Puffer
+import time
+from plugins.cwcore import CWCore
 
 class UserActionResponse:
     def __init__(self, ok: bool, error: str | None = None):
@@ -69,7 +70,8 @@ class UserManager:
             return UserActionResponse(False, "Invalid Minecraft username")
         
         if self.user["whitelist"]["status"] == WLStatus.APPROVED.value:
-            Puffer.execute_command(f"/whitelist add {minecraft}")
+            #Puffer.execute_command(f"/whitelist add {minecraft}")
+            CWCore.whitelist_add(uuid)
         
         self.user["minecraft"] = uuid
         self.user["whitelist"]["status"] = WLStatus.APPROVED.value
@@ -84,7 +86,8 @@ class UserManager:
         
         username = get_mc_username(self.user["minecraft"])
         if self.user["whitelist"]["status"] == WLStatus.APPROVED.value and username:
-            Puffer.execute_command(f"/whitelist remove {username}")
+            # Puffer.execute_command(f"/whitelist remove {username}")
+            CWCore.whitelist_remove(self.user["minecraft"])
         
         self.user["minecraft"] = None
         self.update()
@@ -111,7 +114,8 @@ class UserManager:
             return UserActionResponse(False, "User not found")
         
         if self.user["whitelist"]["status"] == WLStatus.APPROVED.value and self.user["minecraft"]:
-            Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")
+            # Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")
+            CWCore.whitelist_remove(self.user["minecraft"])
             
         DB.get("clockbot").users.delete_one({"discord": self.discord})
         self.user = None
@@ -168,5 +172,15 @@ class UserManager:
         
         DB.get("clockbot").users.insert_one(self.user)
         self.load()
+        
+        return UserActionResponse(True)
+    
+    def just_seen(self):
+        """Update the last seen timestamp of the user."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        self.user["last_seen"] = time.time()
+        self.update()
         
         return UserActionResponse(True)

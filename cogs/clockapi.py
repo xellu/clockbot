@@ -10,7 +10,7 @@ from core.templates.UserTemplate import UserTemplate, WLStatus
 from core.utils import get_mc_username, get_mc_uuid
 from core.users import UserManager
 
-from plugins.puffer import Puffer
+from plugins.cwcore import CWCore
 
 class AccountManagerActions(Enum):
     Link = "Link"
@@ -180,7 +180,8 @@ class ClockAPI(commands.Cog):
                 user.user["whitelist"]["reapply_in"] = None
                 user.update()
                 
-                Puffer.execute_command(f"/whitelist add {minecraft_username}")
+                # Puffer.execute_command(f"/whitelist add {minecraft_username}")
+                CWCore.whitelist_add(user.get()['minecraft'])
                 
                 await ctx.response.send_message(embed=Embed(
                     description = f"Created profile for <@{user.get()['discord']}>\nAttached Minecraft Account: `{user.get()['minecraft']}`",

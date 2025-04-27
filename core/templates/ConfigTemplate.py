@@ -12,20 +12,11 @@ ConfigTemplate = {
     #MongoDB settings
     "MONGO.URL": "mongodb://localhost:27017", #mongodb connection uri
     
-    #PufferPanel credentials
-    "PUFFER.URL": "", #root url
-    "PUFFER.SERVER.ID": "", #server id for the minecraft server (this is the server id in the puffer panel)
-    "PUFFER.USER": "", #email for the account used for login
-    "PUFFER.PASS": "", #account password
-    
     #ClockworkCore credentials
     "CWCORE.IP": "", #ip or domain of the server to be monitored
     "CWCORE.PORT": 0, #port of the server to be monitored
     "CWCORE.KEY": "", #api access key
     "CWCORE.SECRET": "", #encryption secret
-
-    #API    
-    "API.SOURCE": "puffer", #source for the chat link (puffer, cwcore)
 
     #Modules - Set to True to enable, False to disable
     "MODULES.STATUS": True,

@@ -2,7 +2,8 @@ from discord.ext import commands, tasks
 from discord import app_commands, Embed
 
 from mdbb import Bot, Config, CommandLogger, Colors
-from plugins.puffer import Puffer
+
+from plugins.cwcore import CWCore
 
 import requests
 import enum
@@ -21,29 +22,17 @@ class Status(commands.Cog):
         self.maintenance = False
         self.last_state = None
         
-        self.players_max = 0
-        self.players_online = 0
-        
         if not Config.get("MODULES.STATUS"): return
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------
     @tasks.loop(seconds=300)
     async def update_status(self):
-        r = requests.get(f"https://api.mcstatus.io/v2/status/java/{Config.get('STATUS.TARGET.IP')}")
-        if r.status_code != 200:
-            await self.set_channel_status(State.NETWORK_ERROR)
-            return
-        
         if self.maintenance:
             await self.set_channel_status(State.MAINTENANCE)
             return
         
-        data = r.json()
-        if data["online"]:
-            self.players_online = data["players"]["online"]
-            self.players_max = data["players"]["max"]
-            
+        if CWCore.logged_in:
             await self.set_channel_status(State.ONLINE)
             return
         
@@ -55,16 +44,16 @@ class Status(commands.Cog):
             
         match state:
             case State.ONLINE:
-                await channel.edit(name=f"{'🔥' if self.players_online >= 10 else '🟢'} Online: {self.players_online}")
+                await channel.edit(name=f"{'🔥' if CWCore.status['online']['count'] >= 10 else '🟢'} Online: {CWCore.status['online']['count']}")
             case State.OFFLINE:
                 await channel.edit(name=f"⛔ Server Offline")
             case State.MAINTENANCE:
-                await channel.edit(name=f"⚠️ Maintenance")
+                await channel.edit(name=f"🔄️ Maintenance")
             case State.NETWORK_ERROR:
                 await channel.edit(name=f"❓ API Error")
         
         if state != self.last_state:
-            CommandLogger.ok(f"Status: updated server status to {state.name} ({self.players_online}/{self.players_max})")        
+            CommandLogger.ok(f"Status: updated server status to {state.name} ({CWCore.status['online']['count']}/{CWCore.status['online']['max']})")        
 
         self.last_state = state
 
@@ -136,28 +125,17 @@ class Status(commands.Cog):
         
         await ctx.response.defer(thinking=True)
     
-        Puffer.execute_command("spark tps")
-        
-        tps = {"tps": None, "expire": time.time()+5}
-        while True:
-            if time.time() > tps["expire"]:
-                break
-            
-            if time.time() - Puffer.tps["last_updated"] < 10:
-                tps["tps"] = Puffer.tps["tps"]
-                break
-            
-        if tps["tps"] is None:
+        if not CWCore.logged_in:
             await ctx.followup.send(embed=Embed(
                 title = "Server Status",
-                description = "❌ Failed to get TPS data",
+                description = "❌ Failed to get server TPS\n> *The server is offline, or the API is unreachable*",
                 color = Colors.ERROR
             ))
             return
         
         await ctx.followup.send(embed=Embed(
             title = "Server Status",
-            description = f"The current TPS is `{tps['tps']}`",
+            description = f"The current TPS is `{CWCore.status['tps']}`",
             color = Colors.DEFAULT
         ))
             
@@ -175,33 +153,17 @@ class Status(commands.Cog):
         
         
         await ctx.response.defer(thinking=True)
-    
-        Puffer.execute_command("list")
-        
-        online = {
-            "players": [],
-            "online": None,
-            "max": None,
-            "expire": time.time()+5
-        }
-        while True:
-            if time.time() > online["expire"]:
-                break
             
-            if time.time() - Puffer.players["last_updated"] < 10:
-                online = Puffer.players
-                break
-            
-        if online["online"] is None:
+        if not CWCore.logged_in:
             await ctx.followup.send(embed=Embed(
                 title = "Online Players",
-                description = "❌ Failed to get player data",
+                description = "❌ Failed to get online players\n> *The server is offline, or the API is unreachable*",
                 color = Colors.ERROR
             ))
             return
         
         await ctx.followup.send(embed=Embed(
             title = "Online Players",
-            description = f"""*There are {online['online']} players online at this moment*\n\n{', '.join(online["players"])}\n""",
+            description = f"""*There are {CWCore.status['online']['count']} players online at this moment*\n\n{', '.join(p['name'] for p in CWCore.status['online']['list'])}\n""",
             color = Colors.DEFAULT
         ))
