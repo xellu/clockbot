@@ -45,6 +45,10 @@ class UserManager:
         elif self.minecraft:
             self.user = DB.get("clockbot").users.find_one({"minecraft": self.minecraft})
     
+        if self.user:
+            self.discord = self.user["discord"]
+            self.minecraft = self.user["minecraft"]
+    
     def update(self):
         """Update the user in the database."""
         if not self.is_valid():

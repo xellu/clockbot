@@ -287,22 +287,11 @@ class ClockworkCoreAdapter:
         self.event.emit("status.update")
 
     def handle_join(self, packet, data):
-        from core.users import UserManager #just to prevent circular imports
-
         self.event.emit("player.join", data)
         
-        user = UserManager(minecraft=data['uuid'])
-        if user.is_valid():
-            user.just_seen()
-        
     def handle_leave(self, packet, data):
-        from core.users import UserManager
-
         self.event.emit("player.leave", data)
-        
-        user = UserManager(minecraft=data['uuid'])
-        if user.is_valid():
-            user.just_seen()
+    
         
 CWCore = ClockworkCoreAdapter()
 CWCore.connect()

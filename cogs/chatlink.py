@@ -6,8 +6,10 @@ import time
 from mdbb import Bot, Config, CommandLogger, Colors, DB
 from core.utils import get_mc_username, get_mc_uuid, random_str
 from core.templates.Messages import migration_notice
+from core.users import UserManager
 
 from plugins.cwcore import CWCore, CWChatMessage
+
 
 class CLMessage:
     def __init__(self, content=None, embed = None):
@@ -97,6 +99,11 @@ class ChatLink(commands.Cog):
             color = Colors.OK
         )))
         
+        user = UserManager(minecraft=data["uuid"])
+        r = user.just_seen()
+        if not r.ok:
+            CommandLogger.error(f"ChatLink: Failed to update user {user.get()['discord']} ({user.get()['minecraft']}) status: {r.error}")
+        
     def on_player_leave(self, data):
         """
         Handle player leave events from the Clockwork Core API.
@@ -108,6 +115,11 @@ class ChatLink(commands.Cog):
             description = f"**{data['name']}** has left",
             color = Colors.ERROR
         )))
+        
+        user = UserManager(minecraft=data["uuid"])
+        r = user.just_seen()
+        if not r.ok:
+            CommandLogger.error(f"ChatLink: Failed to update user {user.get()['discord']} ({user.get()['minecraft']}) status: {r.error}")
         
     def on_conn_open(self):
         """
