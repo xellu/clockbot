@@ -163,7 +163,7 @@ class ClockworkCoreAdapter:
         )
         while self.socket:
             try:
-                data = self.socket.recv(1024*16)
+                data = self.socket.recv(1024*64)
                 if not data:
                     break
                 
