@@ -135,7 +135,7 @@ class Status(commands.Cog):
         
         await ctx.followup.send(embed=Embed(
             title = "Server Status",
-            description = f"The current TPS is `{CWCore.status['tps']}`",
+            description = f"The current TPS is `{CWCore.status['tps']:.1f}`",
             color = Colors.DEFAULT
         ))
             
