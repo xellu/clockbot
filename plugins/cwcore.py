@@ -163,7 +163,6 @@ class ClockworkCoreAdapter:
             packetId = CWPackets.LOGIN,
             data = {}
         )
-        self._reconnect["index"] = 0
         while self.socket:
             try:
                 data = self.socket.recv(1024*64)
@@ -279,6 +278,7 @@ class ClockworkCoreAdapter:
         
     def handle_login(self, packet, data):
         if data.get("login") == "ok":
+            self._reconnect["index"] = 0
             self.logged_in = True
             return
         
