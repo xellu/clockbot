@@ -101,7 +101,7 @@ class ChatLink(commands.Cog):
         
         user = UserManager(minecraft=data["uuid"])
         r = user.just_seen()
-        if not r.ok:
+        if not r.ok and user.is_valid():
             CommandLogger.error(f"ChatLink: Failed to update user {user.get()['discord']} ({user.get()['minecraft']}) status: {r.error}")
         
     def on_player_leave(self, data):
@@ -118,7 +118,7 @@ class ChatLink(commands.Cog):
         
         user = UserManager(minecraft=data["uuid"])
         r = user.just_seen()
-        if not r.ok:
+        if not r.ok and user.is_valid():
             CommandLogger.error(f"ChatLink: Failed to update user {user.get()['discord']} ({user.get()['minecraft']}) status: {r.error}")
         
     def on_conn_open(self):
