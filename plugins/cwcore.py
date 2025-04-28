@@ -163,6 +163,7 @@ class ClockworkCoreAdapter:
             packetId = CWPackets.LOGIN,
             data = {}
         )
+        self._reconnect["index"] = 0
         while self.socket:
             try:
                 data = self.socket.recv(1024*64)
