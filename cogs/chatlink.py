@@ -32,7 +32,7 @@ class ChatLink(commands.Cog):
         CWCore.event.register("player.join", self.on_player_join)
         CWCore.event.register("player.leave", self.on_player_leave)
         CWCore.event.register("conn.open", self.on_conn_open)
-        CWCore.event.register("conn.close", self.on_conn_close)
+        CWCore.event.register("conn.drop", self.on_conn_close)
         
     @tasks.loop(seconds=1)
     async def queue_loop(self):

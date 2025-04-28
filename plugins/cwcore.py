@@ -101,7 +101,7 @@ class ClockworkCoreAdapter:
             self.socket.connect((Config.get("CWCORE.IP"), Config.get("CWCORE.PORT")))
         except Exception as e:
             EventBus.emit("error", e, "Plugins.CWCore", "Failed to connect to CWCore API",)
-            self.drop(f"Failed to connect to CWCore API: {e}", True)
+            self.drop(f"Failed to connect to CWCore API: {e}", silent=True)
         
         # self.socket.settimeout(30)
         logger.ok("Connected to CWCore API")
@@ -110,13 +110,14 @@ class ClockworkCoreAdapter:
         threading.Thread(target=self.heartbeat, name="Adapter.CWCore.Heartbeat", daemon=True).start()
         self.read_loop()
         
-    def drop(self, reason=None, reconnect=True):
+    def drop(self, reason=None, reconnect=True, silent=False):
         """
         Disconnect from the Clockwork Core API.
         """
         
         logger.warn(f"Dropped connection to CWCore: {reason}")
-        self.event.emit("conn.drop", reason)
+        if not silent:
+            self.event.emit("conn.drop", reason)
 
         self.logged_in = False
         if self.socket:
