@@ -218,10 +218,13 @@ class ClockworkCoreAdapter:
         
         # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
-        logger.debug(data)
+        # logger.debug(data)
         
         data = data[len(b"clockwork$"):]
-        data = data.rstrip(b"\n")
+        
+        padding = len(data) % 4
+        if padding > 0:
+            data += '='* (4 - padding)
         
         data = gzip.decompress(base64.b64decode(data))
         data = self.aes_cipher.decrypt(base64.b64decode(data))
