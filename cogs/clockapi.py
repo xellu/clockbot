@@ -110,7 +110,7 @@ class ClockAPI(commands.Cog):
         if discord:
             user = UserManager(discord=discord.id).get()
         elif minecraft:
-            user = UserManager(minecraft=minecraft).get()
+            user = UserManager(minecraft=get_mc_uuid(minecraft)).get()
             
         if not user:
             await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
