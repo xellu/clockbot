@@ -97,7 +97,34 @@ class ClockAPI(commands.Cog):
             title = "Last Seen",
             description = f"{mc_username or f'<@{target.id}>'} {'was last seen on the server <t:x:R>'.replace('x', str(int(user['last_seen']))) if user['last_seen'] else 'was never online'}.",
             color = Colors.DEFAULT
-        ))
+        ), ephemeral=True)
+        
+    @app_commands.command(name="lookup", description="Lookup a user's profile")
+    @app_commands.describe(discord="Discord ID of the user", minecraft="Minecraft username")
+    async def lookup(self, ctx, discord: discord.User = None, minecraft: str = None):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed(description="Please provide either a Discord ID or a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+            return
+        
+        user = None
+        if discord:
+            user = UserManager(discord=discord.id).get()
+        elif minecraft:
+            user = UserManager(minecraft=minecraft).get()
+            
+        if not user:
+            await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
+            return
+        
+        await ctx.response.send_message(embed=Embed(
+            title = f"Lookup",
+            description  = f"""
+**Minecraft:** {get_mc_username(user["minecraft"])} `{user['minecraft']}`
+**Discord:** <@{user['discord']}> `{user['discord']}`
+**Last Seen:** {'<t:x:R> <t:x:f>'.replace('x', str(int(user['last_seen']))) if user['last_seen'] else 'Never'}
+            """,
+            color = Colors.DEFAULT
+        ), ephemeral=True)
         
     
     @app_commands.command(name="account", description="Manage user accounts. Users who are created will have automatically approved whitelists")
