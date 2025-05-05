@@ -84,7 +84,7 @@ class ClockAPI(commands.Cog):
         await ctx.followup.send(embed=embed)
     
     @app_commands.command(name="seen", description="See when a user was last seen")
-    @app_commands.describe(user="Discord ID of the user", minecraft="Minecraft username")
+    @app_commands.describe(discord="Discord ID of the user", minecraft="Minecraft username")
     async def seen(self, ctx, discord: discord.User = None, minecraft: str = None):
         if not discord and not minecraft:
             await ctx.response.send_message(embed=Embed(description="Please provide either a Discord ID or a Minecraft username.", color=Colors.ERROR), ephemeral=True)
