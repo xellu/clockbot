@@ -7,9 +7,10 @@ import time
 from plugins.cwcore import CWCore
 
 class UserActionResponse:
-    def __init__(self, ok: bool, error: str | None = None):
+    def __init__(self, ok: bool, error: str | None = None, meta: any = None):
         self.ok = ok
         self.error = error
+        self.meta = meta
 
 
 class UserManager:
@@ -188,3 +189,29 @@ class UserManager:
         self.update()
         
         return UserActionResponse(True)
+    
+    def get_seen(self, md: bool = False):
+        """"
+        Get the last seen timestamp of the user.
+        params:
+            md (bool): If True, will return as markdown string.
+        
+        returns:
+            str: Last seen timestamp as a string. (if md is True)
+            int: Last seen timestamp as an int.
+        """
+        
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if not md:
+            return UserActionResponse(True, meta=self.user["last_seen"])
+        
+        if CWCore.logged_in:
+            for player in CWCore.status["online"]["list"]:
+                if player["uuid"] == self.user["minecraft"]:
+                    return UserActionResponse(True, meta=f"<t:{int(time.time())}:R> <t:{int(time.time())}:f>")
+        
+        if self.user["last_seen"]:
+            return UserActionResponse(True, meta=f"<t:{int(self.user['last_seen'])}:R> <t:{int(self.user['last_seen'])}:f>")
+        return UserActionResponse(True, meta="Never")

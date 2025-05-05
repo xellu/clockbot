@@ -84,18 +84,37 @@ class ClockAPI(commands.Cog):
         await ctx.followup.send(embed=embed)
     
     @app_commands.command(name="seen", description="See when a user was last seen")
-    @app_commands.describe(user="User to check")
-    async def seen(self, ctx, user: discord.User):
-        target = user
+    @app_commands.describe(user="Discord ID of the user", minecraft="Minecraft username")
+    async def seen(self, ctx, discord: discord.User = None, minecraft: str = None):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed(description="Please provide either a Discord ID or a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+            return
         
-        user = UserManager(discord=target.id).get()
-        if not user:
+        user = None
+        if discord:
+            user = UserManager(discord=discord.id)
+        elif minecraft:
+            user = UserManager(minecraft=get_mc_uuid(minecraft))
+            
+        if not user.is_valid():
             await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
+            return
         
-        mc_username = get_mc_username(user["minecraft"])
+        mc_username = get_mc_username(user.get()["minecraft"])
+        seen = user.get_seen(md=True)
+        if not seen.ok:
+            await ctx.response.send_message(embed=Embed(description=seen.error, color=Colors.ERROR), ephemeral=True)
+            return
+
+        last_seen = seen.meta        
+        if seen.meta == "Never":
+            last_seen = f"{mc_username} has never been seen"
+        elif seen.meta == "Online":
+            last_seen = f"{mc_username} is currently online"
+            
         await ctx.response.send_message(embed=Embed(
             title = "Last Seen",
-            description = f"{mc_username or f'<@{target.id}>'} {'was last seen on the server <t:x:R>'.replace('x', str(int(user['last_seen']))) if user['last_seen'] else 'was never online'}.",
+            description = last_seen,
             color = Colors.DEFAULT
         ), ephemeral=True)
         
@@ -121,7 +140,7 @@ class ClockAPI(commands.Cog):
             description  = f"""
 **Minecraft:** {get_mc_username(user["minecraft"])} `{user['minecraft']}`
 **Discord:** <@{user['discord']}> `{user['discord']}`
-**Last Seen:** {'<t:x:R> <t:x:f>'.replace('x', str(int(user['last_seen']))) if user['last_seen'] else 'Never'}
+**Last Seen:** {user.get_seen(md=True)}
             """,
             color = Colors.DEFAULT
         ), ephemeral=True)

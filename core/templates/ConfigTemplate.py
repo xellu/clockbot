@@ -30,4 +30,9 @@ ConfigTemplate = {
     
     #ChatLink module settings
     "CHATLINK.CHANNEL": 0, #channel id for an in-game chat link channel
+    
+    #Whitelist module settings
+    "WHITELIST.MONITOR.GUILD": 0, #guild id for a server to monitor (will de-list people if they leave)
+    "WHITELIST.MEMBERSHIP.ROLE": 0, #id of a role to be given to members who are whitelisted
+    "WHITELIST.ANNOUNCE.CHANNEL": 0 #id of a channel where whitelist/de-list messages will be sent
 }

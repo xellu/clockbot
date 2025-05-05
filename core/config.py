@@ -1,7 +1,9 @@
 import json
 import os
 from .events import EventBus
+from .logging import LoggingManager
 
+logger = LoggingManager("Core.Config")
 
 class ConfigManager:
     def __init__(self, path: str, template: dict | None = None, max_retries: int = 3):
@@ -36,6 +38,12 @@ class ConfigManager:
         Returns:
             None
         """
+        if not os.path.exists(self.path):
+            self.data = self.template or {}
+            self.save()
+            logger.ok("Created a new configuration file")
+            EventBus.signal("shutdown.crash")
+        
         try:
             with open(self.path, 'r') as file:
                 self.data = json.load(file)
