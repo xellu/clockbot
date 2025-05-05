@@ -24,6 +24,7 @@ class ClockAPI(commands.Cog):
     def __init__(self):
         self.bot = Bot
 
+    #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
     @app_commands.command(name="migrate", description="Add your Minecraft and Discord accounts to ClockAPI")
     @app_commands.describe(code="The code you received")
     async def migrate_to_clockapi(self, ctx, code: str):
@@ -55,6 +56,7 @@ class ClockAPI(commands.Cog):
             description = f"We've created your ClockAPI profile!",
             color = Colors.OK
         ), ephemeral=True)
+    #--------------------------------------------------------------------------------------
         
     @app_commands.command(name="profile", description="View your ClockAPI profile")
     async def profile(self, ctx):

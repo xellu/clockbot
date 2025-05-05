@@ -2,6 +2,7 @@ from discord.ext import commands, tasks
 from discord import app_commands, Embed
 import json
 import time
+import re
 
 from mdbb import Bot, Config, CommandLogger, Colors, DB
 from core.utils import get_mc_username, get_mc_uuid, random_str
@@ -10,6 +11,8 @@ from core.users import UserManager
 
 from plugins.cwcore import CWCore, CWChatMessage
 
+#xaero-waypoint:<name>:<initial>:<x>:<y>:<z>:<color_id>:<disabled>:<type>:<dimension_id>
+WP_REGEX = re.compile(r"xaero-waypoint:(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+)")
 
 class CLMessage:
     def __init__(self, content=None, embed = None):
@@ -37,7 +40,7 @@ class ChatLink(commands.Cog):
     @tasks.loop(seconds=1)
     async def queue_loop(self):
         buffer = []
-        for msg in self.queue:
+        for msg in self.queue:            
             if msg.embed:
                 if buffer:
                     await self.channel.send("\n".join(buffer))
@@ -84,6 +87,20 @@ class ChatLink(commands.Cog):
         """
         if not self.channel: return
         if not Config.get("MODULES.CHATLINK"): return
+        
+        waypoint = WP_REGEX.match(data['content'])
+        if waypoint:
+            name, initial, x, y, z, color_id, disabled, type_id, dimension_id = waypoint.groups()
+            dimension = "Overworld"
+            if "end" in dimension_id.lower(): dimension = "End"
+            elif "nether" in dimension_id.lower(): dimension = "Nether"
+            
+            self.queue.append(CLMessage(embed=Embed(
+                title = f"[{initial}] {name}",
+                description = f"**{data['author']['name']}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
+                color = Colors.DEFAULT
+            )))
+            return
         
         self.queue.append(CLMessage(f"**{data['author']['name']}:** {data['content']}"))
         

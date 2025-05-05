@@ -1,6 +1,7 @@
 from core import Config
 from core.logging import LoggingManager
 from core.events import EventManager, EventBus
+from core.utils import get_mc_username, get_mc_uuid
 
 import json
 import time
@@ -24,6 +25,8 @@ class CWPackets:
     PLAYER_LEAVE = 5
     WL_ADD = 6
     WL_REMOVE = 7
+    
+    MIGRATION_NOTICE = 777
 
 class CWChatMessage:
     def __init__(self, message_id: int, author: str, content: str, attachments: list[str] | None = None):
@@ -225,7 +228,7 @@ class ClockworkCoreAdapter:
         
         padding = len(data) % 4
         if padding > 0:
-            data += '='* (4 - padding)
+            data += b'='* (4 - padding)
         
         data = gzip.decompress(base64.b64decode(data))
         data = self.aes_cipher.decrypt(base64.b64decode(data))
@@ -273,6 +276,16 @@ class ClockworkCoreAdapter:
                 "replyData": CWChatMessage.replyData,
                 
                 "attachments": CWChatMessage.attachments
+            }
+        )
+        
+    def send_migration_notice(self, uuid, username, code) -> None:
+        self.send(
+            packetId = CWPackets.MIGRATION_NOTICE,
+            data = {
+                "uuid": uuid,
+                "username": username,
+                "code": code
             }
         )
         
