@@ -67,21 +67,22 @@ class ClockAPI(commands.Cog):
         
         await ctx.response.defer(ephemeral=True)
         
-        mc_username = get_mc_username(user["minecraft"])
+        mc_username = get_mc_username(user.get()["minecraft"])
         
+        seen = user.get_seen(md=True)
         embed = Embed(
             title = "Your Profile",
             description = f"""
-**Minecraft:** {mc_username or ''} `{user['minecraft'] or 'NOT LINKED'}`
-**Discord:** <@{user['discord']}> `{user['discord']}`
+**Minecraft:** {mc_username or ''} `{user.get()['minecraft'] or 'NOT LINKED'}`
+**Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
 
-**Last Seen:** {'<t:x:R> <t:x:f>'.replace('x', str(int(user['last_seen']))) if user['last_seen'] else 'Never'}
-**Whitelist:** {user['whitelist']["status"]}
+**Last Seen:** {seen.meta if seen.ok else seen.error}
+**Whitelist:** {user.get()['whitelist']["status"]}
             """,
             color = Colors.DEFAULT
         )
         
-        embed.set_thumbnail(url=f"https://mc-heads.net/body/{user['minecraft']}")
+        embed.set_thumbnail(url=f"https://mc-heads.net/body/{user.get()['minecraft']}")
         
         await ctx.followup.send(embed=embed)
     
@@ -129,9 +130,9 @@ class ClockAPI(commands.Cog):
         
         user = None
         if discord:
-            user = UserManager(discord=discord.id).get()
+            user = UserManager(discord=discord.id)
         elif minecraft:
-            user = UserManager(minecraft=get_mc_uuid(minecraft)).get()
+            user = UserManager(minecraft=get_mc_uuid(minecraft))
             
         if not user:
             await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
@@ -140,12 +141,12 @@ class ClockAPI(commands.Cog):
         await ctx.response.send_message(embed=Embed(
             title = f"Lookup",
             description  = f"""
-**Minecraft:** {get_mc_username(user["minecraft"])} `{user['minecraft']}`
-**Discord:** <@{user['discord']}> `{user['discord']}`
+**Minecraft:** {get_mc_username(user.get()["minecraft"])} `{user.get()['minecraft']}`
+**Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
 **Last Seen:** {user.get_seen(md=True)}
             """,
             color = Colors.DEFAULT
-        ), ephemeral=True)
+        ).set_thumbnail(url=f"https://mc-heads.net/body/{user.get()['minecraft']}"), ephemeral=True)
         
     
     @app_commands.command(name="account", description="Manage user accounts. Users who are created will have automatically approved whitelists")

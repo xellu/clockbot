@@ -198,19 +198,24 @@ class UserManager:
         
         returns:
             str: Last seen timestamp as a string. (if md is True)
-            int: Last seen timestamp as an int.
+            int: Last seen timestamp as an int. (-1 = Never, -2 = Online, *= Timestamp)
         """
         
         if not self.is_valid():
             return UserActionResponse(False, "User not found")
         
         if not md:
-            return UserActionResponse(True, meta=self.user["last_seen"])
+            if CWCore.logged_in:
+                for player in CWCore.status["online"]["list"]:
+                    if player["uuid"] == self.user["minecraft"]:
+                        return UserActionResponse(True, meta=-2)
+                    
+            return UserActionResponse(True, meta=self.user["last_seen"] or -1)
         
         if CWCore.logged_in:
             for player in CWCore.status["online"]["list"]:
                 if player["uuid"] == self.user["minecraft"]:
-                    return UserActionResponse(True, meta=f"<t:{int(time.time())}:R> <t:{int(time.time())}:f>")
+                    return UserActionResponse(True, meta="Online")
         
         if self.user["last_seen"]:
             return UserActionResponse(True, meta=f"<t:{int(self.user['last_seen'])}:R> <t:{int(self.user['last_seen'])}:f>")

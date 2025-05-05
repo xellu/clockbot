@@ -5,8 +5,7 @@ import time
 import re
 
 from mdbb import Bot, Config, CommandLogger, Colors, DB
-from core.utils import get_mc_username, get_mc_uuid, random_str
-from core.templates.Messages import migration_notice
+from core.utils import get_mc_username, get_mc_uuid, random_str, parse_time
 from core.users import UserManager
 
 from plugins.cwcore import CWCore, CWChatMessage
@@ -19,6 +18,18 @@ class CLMessage:
         self.content = content
         self.embed = embed
 
+class CLCommand:
+    def __init__(self, name, description, args, func):
+        self.name = name
+        self.description = description
+        self.args = args
+        self.func = func
+        
+class CLCArgs:
+    def __init__(self, name, required = True):
+        self.name = name
+        self.required = required
+        
 class ChatLink(commands.Cog):
     def __init__(self):
         self.bot = Bot
@@ -30,6 +41,10 @@ class ChatLink(commands.Cog):
         
         self.queue = []
         self.queue_loop.start()
+        
+        self.commands = {
+            CLCommand("seen", "Check when was a player last seen", [CLCArgs("player")], self.cmd_seen),
+        }
         
         CWCore.event.register("chat.message", self.on_chat_message)
         CWCore.event.register("player.join", self.on_player_join)
@@ -81,6 +96,47 @@ class ChatLink(commands.Cog):
                 
         CWCore.chat_passthrough(cwm)
         
+    def cmd_seen(self, *args):
+        if not args: return "No player specified"
+        player = args[0]
+        CommandLogger.warn(f"ChatLink: Seen command for {player}")
+        
+        user = UserManager(minecraft=get_mc_uuid(player))
+        if not user.is_valid():
+            return f"Player not found"
+        
+        seen = user.get_seen()
+        if not seen.ok:
+            return f"Error: {seen.error}"
+        
+        if seen.meta == -1:
+            return "This player has never been seen"
+        elif seen.meta == -2:
+            return "This player is currently online"
+        else:
+            diff = time.time() - seen.meta
+            return f"This player was last seen {parse_time(diff)} ago"
+            
+        
+        
+    def process_command(self, command, author):
+        if not command: return
+        if not command.startswith("!"): return
+        
+        if not Config.get("MODULES.CHATLINK"): return
+        
+        name, *args = command[1:].split(" ")
+        name = name.lower()
+        
+        for cmd in self.commands:
+            if cmd.name == name:
+                CommandLogger.warn(f"{name}: {args}")
+                r = cmd.func(*args)
+                if r: return f"{name.capitalize()}: {r}"
+                return
+        
+        return False
+        
     def on_chat_message(self, data):
         """
         Handle chat messages from the Clockwork Core API.
@@ -101,6 +157,19 @@ class ChatLink(commands.Cog):
                 color = Colors.DEFAULT
             )))
             return
+        
+        if data["content"].startswith("!"):
+            try:
+                r = self.process_command(data["content"], data["author"]["name"])
+                if r != None:
+                    CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", str(r)))
+                    
+            except Exception as e:
+                CommandLogger.error(f"ChatLink: Failed to process command {data['content']} from {data['author']['name']}: {e}")
+                CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", f"Unable to process command"))
+                return
+                
+            if r != None: return 
         
         self.queue.append(CLMessage(f"**{data['author']['name']}:** {data['content']}"))
         

@@ -45,3 +45,27 @@ def random_str(length=10):
 def hash_str(string_to_hash):
     """Hash a string using SHA-256"""
     return hashlib.sha256(string_to_hash.encode()).hexdigest()
+
+def parse_time(num: int):
+    #turns seconds into a pretty format, eg:
+    #84599 --> 23h 59m 59s
+    
+    if num <= 0: return "0s"
+
+    out = ""
+    if num >= 86400:
+        out += f"{int(num // 86400)}d "
+        num %= 86400
+    
+    if num >= 3600:
+        out += f"{int(num // 3600)}h "
+        num %= 3600
+        
+    if num >= 60:
+        out += f"{int(num // 60)}m "
+        num %= 60
+        
+    if num > 0:
+        out += f"{int(num)}s"
+        
+    return out.strip()
