@@ -37,7 +37,7 @@ def about_command(ctx):
     print(Banner)
     ctx.logger.info(f"Running {Config.get('SERVER.NAME')}, version {Release}")
     
-    ctx.logger.info("Infomation")
+    ctx.logger.info("Information")
     ctx.logger.success("Success")
     ctx.logger.warning("Warning")
     ctx.logger.error("Error")
