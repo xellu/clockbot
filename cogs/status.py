@@ -1,13 +1,10 @@
 from discord.ext import commands, tasks
 from discord import app_commands, Embed
 
-from mdbb import Bot, Config, CommandLogger, Colors
-
+from mdbb import Bot, Config, CommandLogger, Colors, EventBus
 from plugins.cwcore import CWCore
 
-import requests
 import enum
-import time
 
 class State(enum.Enum):
     NETWORK_ERROR = -1
@@ -108,6 +105,14 @@ class Status(commands.Cog):
         ))
         self.maintenance = False
         await self.set_channel_status(State.ONLINE)
+        
+    @app_commands.command(name="stop", description="Stops the Discord bot")
+    @app_commands.allowed_contexts(guilds=True, private_channels=True)
+    @app_commands.checks.has_permissions(administrator=True)
+    async def stop_command(self, ctx):
+        await ctx.response.send_message(embed=Embed(description="Shutting down...", color=Colors.DEFAULT))
+        EventBus.emit("shutdown", f"Shutdown requested by {ctx.user.name} ({ctx.user.id})")
+        
         
     #SERVER INFO----------------------------------
     @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")

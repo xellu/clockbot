@@ -143,7 +143,7 @@ class ClockAPI(commands.Cog):
             description  = f"""
 **Minecraft:** {get_mc_username(user.get()["minecraft"])} `{user.get()['minecraft']}`
 **Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
-**Last Seen:** {user.get_seen(md=True)}
+**Last Seen:** {user.get_seen(md=True).meta}
             """,
             color = Colors.DEFAULT
         ).set_thumbnail(url=f"https://mc-heads.net/body/{user.get()['minecraft']}"), ephemeral=True)

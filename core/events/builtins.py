@@ -22,7 +22,22 @@ def error_callback(error: Exception, source: str = fallback["source"], message: 
     logger.error(f"Error in {source}: {error}")
 
     if Config.get("DEVMODE"):
-        traceback.print_exc()
+        tracebacks = traceback.format_tb(tb=error.__traceback__)
+        tbdata = traceback.extract_tb(error.__traceback__)
+        
+        logger.error("==========================================")
+
+        for i, tb in enumerate(tracebacks):
+            logger.error(f"Traceback #{i+1}:")
+            logger.error(tb)
+            logger.error("==========================================")
+            
+        
+        try:
+            filename, linenum, funcname, linecontent = tbdata[-1]
+            logger.error(f"Source: {filename} @ {linenum} in {funcname} -> {linecontent}")
+        except:
+            logger.error(f"Failed to parse traceback data")
 
     if fatal:
         EventBus.signal("shutdown.crash", f"Fatal error in {source}: {message}")

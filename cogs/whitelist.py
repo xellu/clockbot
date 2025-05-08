@@ -52,6 +52,8 @@ class Whitelist(commands.Cog):
     
     #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
     def on_player_join(self, data): #send migration notice to the player
+        if not self.enabled: return
+        
         # CommandLogger.info(f"Whitelist: Player {data['name']} joined the server")
         user = UserManager(minecraft=data["uuid"])
         if user.is_valid():
