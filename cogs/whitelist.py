@@ -6,7 +6,7 @@ import time
 
 from mdbb import Config, Bot, Colors, CommandLogger, DB
 
-from core.templates.UserTemplate import UserTemplate, ApplicationTemplate, WLStatus
+from core.templates.UserTemplate import UserTemplate, ApplicationTemplate, WLStatus, ActionTemplate
 from core.templates.Messages import apply_for_whitelist_msg
 from core.utils import get_mc_username, get_mc_uuid, random_str
 from core.users import UserManager
@@ -14,15 +14,17 @@ from core.users import UserManager
 from plugins.cwcore import CWCore, CWChatMessage
 
 class PhantomUser:
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, _id: int):
+        self.id = _id
+        self.name = str(_id)
 
 class Whitelist(commands.Cog):
     def __init__(self):
         self.bot = Bot
         
         self.guild = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD"))
-        self.log_channel = self.bot.get_channel(Config.get("WHITELIST.ANNOUNCE.CHANNEL"))
+        self.announce_channel = self.bot.get_channel(Config.get("WHITELIST.ANNOUNCE.CHANNEL"))
+        self.admin_channel = self.bot.get_channel(Config.get("WHITELIST.ADMIN.CHANNEL"))
         self.membership_role = self.guild.get_role(Config.get("WHITELIST.MEMBERSHIP.ROLE")) if self.guild else None
 
         self.player_queue = []
@@ -30,12 +32,17 @@ class Whitelist(commands.Cog):
         self.enabled = Config.get("MODULES.WHITELIST")
         if not self.enabled: return
         
+        #checks------------
         if not self.guild:
             CommandLogger.error("Whitelist: Guild not found, please check your config")
             self.enabled = False
             
-        if not self.log_channel:
-            CommandLogger.error("Whitelist: Log channel not found, please check your config")
+        if not self.announce_channel:
+            CommandLogger.error("Whitelist: Announce channel not found, please check your config")
+            self.enabled = False
+            
+        if not self.admin_channel:
+            CommandLogger.error("Whitelist: Admin channel not found, please check your config")
             self.enabled = False
             
         if not self.membership_role:
@@ -46,8 +53,9 @@ class Whitelist(commands.Cog):
             CommandLogger.error("Whitelist: Module disabled due to misconfigurations")
             return
         
-        self.update_members.start()
+        #---------
         
+        self.update_members.start()
         CWCore.event.register("player.join", self.on_player_join)
     
     #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
@@ -104,9 +112,8 @@ class Whitelist(commands.Cog):
                 
             if user.get()["whitelist"]["status"] != WLStatus.APPROVED.value and self.membership_role in member.roles: #handle rejected users with role
                 await member.remove_roles(self.membership_role)
-                await self.announce_delist(member, "Database mismatch")
+                #TODO: await self.announce_delist(member, "Database mismatch")
                 CommandLogger.warn(f"Whitelist: {member.name} is not whitelisted")
-            
         
         for user in DB.get("clockbot").users.find({"discord": {"$nin": processed}}): #delete users that left the server
             user = UserManager(discord=user["discord"])
@@ -114,38 +121,117 @@ class Whitelist(commands.Cog):
             if not discord_user:
                 discord_user = PhantomUser(user.get()['discord'])
 
-            # user.delete()
-            await self.announce_delist(discord_user, "Left the discord server", deleted=True)
+            await self.suggest_delist(discord_user, "User left the server")          
+        
+    async def suggest_delist(self, user: discord.User | PhantomUser, reason: str = None):
+        if not self.enabled: return
+        if not self.admin_channel: return
+        if not user: return
+        
+        if DB.get("clockbot").actions.find_one({"user": user.id, "type": "wl-remove"}): #already suggested
+            return
+        
+        if not reason:
+            reason = "No reason provided"
             
-            CommandLogger.error(f"Whitelist: {user.get()['discord']} {discord_user} is not in the guild")
-    
-    #Whitelist de-listing
-    async def announce_delist(self, member: discord.Member, reason=None, deleted=False):
+        action_id = f"WLRS-{random_str(8)}"
         embed = Embed(
-            description = f"👋 **@{member.name}** has been de-listed: `{reason or 'Unspecified'}`",
+            title = "Whitelist Removal Suggestion",
+            description = f"🚫 **{user.name}** should be removed from the whitelist\n> `{reason}`",
             color = Colors.ERROR
         )
-        embed.set_author(name=member.name, icon_url=member.display_avatar.url if not isinstance(member, PhantomUser) else None)
-        if deleted:
-            embed.set_footer(text="This profile has been deleted permanently")
-        await self.log_channel.send(embed=embed)
-    
-    #Whitelist apply reject
-    async def announce_reject(self, member: discord.Member, reason=None):
+        embed.set_author(name=user.name, icon_url=user.display_avatar.url if not isinstance(user, PhantomUser) else None)
+        
+        view = discord.ui.View(timeout=None)
+        view.add_item(discord.ui.Button(label="Approve", style=discord.ButtonStyle.success, custom_id="ok"))
+        view.add_item(discord.ui.Button(label="Deny", style=discord.ButtonStyle.danger, custom_id="cancel"))
+        
+        msg = await self.admin_channel.send(embed=embed, view=view)
+        
+        #create an action report
+        action = ActionTemplate()
+        action["id"] = action_id
+        action["msg"] = msg.id
+        
+        action["type"] = "wl-remove"
+        action["user"] = user.id
+        action["reason"] = reason
+        
+        DB.get("clockbot").actions.insert_one(action)
+        
+    async def announce_delist(self, user: dict, reason: str = None):
+        if not self.enabled: return
+        if not self.announce_channel: return
+        
+        if not reason:
+            reason = "No reason provided"
+            
         embed = Embed(
-            description = f"❌ **@{member.name}**'s application was rejected: `{reason or 'Unspecified'}`",
+            description = f"🚫 {get_mc_username(user['minecraft'])} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
             color = Colors.ERROR
         )
-        embed.set_author(name=member.name, icon_url=member.display_avatar.url)
-        await self.log_channel.send(embed=embed)
-    
-    #Whitelist apply approve
-    async def announce_whitelist(self, member: discord.Member, moderator: int):
+        await self.announce_channel.send(embed=embed)
+        
+    async def announce_whitelist(self, user: discord.Member, moderator: str):
+        if not self.enabled: return
+        if not self.announce_channel: return
+        
+        _user = UserManager(discord=user.id)
         embed = Embed(
-            description = f"✅ **@{member.name}** has been whitelisted by <@{moderator}>",
+            description = f"✅ {get_mc_username(_user.get()['minecraft'])} (<@{user.id}>) was whitelisted by <@{moderator}>",
             color = Colors.OK
         )
-        embed.set_author(name=member.name, icon_url=member.display_avatar.url)
-        await self.log_channel.send(embed=embed)
-    
-   
+        await self.announce_channel.send(user.mention, embed=embed)
+        
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction):
+        if not self.enabled: return
+        
+        msg = interaction.message
+        approved = interaction.data.get("custom_id") == "ok" 
+        
+        if not msg: return
+                
+        action = DB.get("clockbot").actions.find_one({"msg": msg.id})
+        if not action: return
+        
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if not approved:
+            DB.get("clockbot").actions.delete_one({"msg": msg.id})
+            await msg.delete()
+            await interaction.response.send_message(embed=Embed(
+                description = "✅ Action cancelled",
+                color = Colors.OK
+            ), ephemeral=True)
+            
+            return
+        
+        #approve action
+        match action["type"]:
+            case "wl-remove":
+                user = UserManager(discord=action["user"])
+                if not user.is_valid():
+                    await interaction.followup.send(embed=Embed(
+                        description = "🚫 User not found",
+                        color = Colors.ERROR
+                    ), ephemeral=True)
+                    await msg.delete()
+                    return
+                
+                user_data = user.user
+                
+                user.delete()                
+                await self.announce_delist(user_data, action["reason"])
+                              
+                await interaction.followup.send(embed=Embed(
+                    description = f"✅ {get_mc_username(user_data['minecraft'])} was removed from whitelist:\n> `{action['reason']}`",
+                    color = Colors.OK
+                ), ephemeral=True)
+                
+                await msg.delete()
+                  
+            case "wl-add":
+                pass
+        
+                

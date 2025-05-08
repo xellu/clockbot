@@ -75,3 +75,10 @@ def threads_command(ctx):
 
         out.append(f"{thread.name} - {func} ({func_loc})")
     return CommandResponse(out)
+
+@Shell.command("clearactions", "Clears all actions from the action database", "clearactions")
+def clear_actions_command(ctx):
+    from core import DB
+    
+    DB.get("clockbot").actions.delete_many({})
+    return CommandResponse("Cleared all actions from the database")

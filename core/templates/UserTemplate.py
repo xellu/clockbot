@@ -1,5 +1,6 @@
 from enum import Enum
 import time
+from ..utils import random_str
 
 class WLStatus(Enum):
     INACTIVE = "Inactive"
@@ -37,4 +38,14 @@ def ApplicationTemplate():
         },
         
         "created_at": time.time(), #timestamp of when the application was created
+    }
+    
+def ActionTemplate():
+    return {
+        "id": f"GNRC-{random_str(8)}",
+        "type": "action", #action type (e.g. "wl-add", "wl-remove")
+        "msg": 0, #message id
+        
+        "user": 0, #user id
+        "reason": None, #reason for the action
     }
