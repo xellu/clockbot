@@ -19,7 +19,9 @@ class Status(commands.Cog):
         self.maintenance = False
         self.last_state = None
         
-        if not Config.get("MODULES.STATUS"): return
+        if not Config.get("MODULES.STATUS"):
+            CommandLogger.warning("Module disabled: Status")
+            return
         self.update_status.start()
     
     #SERVER STATUS DISPLAY----------------------------------

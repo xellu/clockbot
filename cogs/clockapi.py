@@ -60,8 +60,8 @@ class ClockAPI(commands.Cog):
         
     @app_commands.command(name="profile", description="View your ClockAPI profile")
     async def profile(self, ctx):
-        user = UserManager(discord=ctx.user.id).get()
-        if not user:
+        user = UserManager(discord=ctx.user.id)
+        if not user.is_valid():
             await ctx.response.send_message(embed=Embed(description="You do not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
             return
         

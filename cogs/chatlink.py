@@ -35,7 +35,10 @@ class ChatLink(commands.Cog):
         self.bot = Bot
         self.channel = self.bot.get_channel(Config.get("CHATLINK.CHANNEL"))
         
-        if not Config.get("MODULES.CHATLINK"): return
+        if not Config.get("MODULES.CHATLINK"):
+            CommandLogger.warning("Module disabled: ChatLink")
+            return
+        
         if not self.channel:
             CommandLogger.error("ChatLink: Channel not found, please check your config")
         

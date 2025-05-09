@@ -30,7 +30,9 @@ class Whitelist(commands.Cog):
         self.player_queue = []
    
         self.enabled = Config.get("MODULES.WHITELIST")
-        if not self.enabled: return
+        if not self.enabled:
+            CommandLogger.warning("Module disabled: Whitelist")
+            return
         
         #checks------------
         if not self.guild:
@@ -76,7 +78,7 @@ class Whitelist(commands.Cog):
                 "code": code
             })
         
-        if data["name"] != "Xelluu": return
+        # if data["name"] != "Xelluu": return
         
         CWCore.send_migration_notice(
             uuid = data["uuid"],
