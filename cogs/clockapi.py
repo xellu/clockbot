@@ -32,17 +32,17 @@ class ClockAPI(commands.Cog):
         
         user = UserManager(discord=ctx.user.id)
         if user.is_valid() and user.get()["minecraft"]:
-            await ctx.response.send_message(embed=Embed(description="You already have a ClockAPI profile", color=Colors.ERROR), ephemeral=True)
+            await ctx.followup.send(embed=Embed(description="You already have a ClockAPI profile", color=Colors.ERROR), ephemeral=True)
             return
         
         code = DB.get("clockbot").codes.find_one({"code": code})
         if code is None:
-            await ctx.response.send_message(embed=Embed(description="Invalid code.", color=Colors.ERROR), ephemeral=True)
+            await ctx.followup.send(embed=Embed(description="Invalid code.", color=Colors.ERROR), ephemeral=True)
             return
         
         r = user.create(minecraft=get_mc_username(code["uuid"]))
         if not r.ok:
-            await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+            await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
             return
         
         user.user["whitelist"]["status"] = WLStatus.APPROVED.value
