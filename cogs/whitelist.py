@@ -76,11 +76,13 @@ class Whitelist(commands.Cog):
                 "code": code
             })
         
-        # CWCore.send_migration_notice(
-        #     uuid = data["uuid"],
-        #     username = data["name"],
-        #     code = code
-        # )
+        if data["name"] != "Xelluu": return
+        
+        CWCore.send_migration_notice(
+            uuid = data["uuid"],
+            username = data["name"],
+            code = code
+        )
         CommandLogger.info(f"Unregistered player {data['name']} joined, sending migration notice")
     #-----------------------------------------------------------------------
         
