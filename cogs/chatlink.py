@@ -163,8 +163,8 @@ class ChatLink(commands.Cog):
         
         if data["content"].startswith("!"):
             try:
-                r = self.process_command(data["content"], data["author"]["name"])
-                if r != None:
+                r = self.process_command(data["content"], data["author"]["name"])                
+                if r in [None, False]:
                     CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", str(r)))
                     
             except Exception as e:
