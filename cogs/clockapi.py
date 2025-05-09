@@ -134,7 +134,7 @@ class ClockAPI(commands.Cog):
         elif minecraft:
             user = UserManager(minecraft=get_mc_uuid(minecraft))
             
-        if not user:
+        if not user.is_valid():
             await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
             return
         
