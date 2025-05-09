@@ -207,13 +207,14 @@ class ClockAPI(commands.Cog):
                 ), ephemeral=True)
                 
             case AccountManagerActions.Delete:
+                user_id = user.get()['discord']
                 r = user.delete()
                 if not r.ok:
                     await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Deleted profile for <@{ctx.user.id}>",
+                    description = f"Deleted profile for <@{user_id}>",
                     color = Colors.OK
                 ), ephemeral=True)
                 
