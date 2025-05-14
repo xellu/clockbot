@@ -238,7 +238,7 @@ class ClockworkCoreAdapter:
         
         return data
 
-    def fix_pad(data: bytes) -> bytes:
+    def fix_pad(self, data: bytes) -> bytes:
         padding = len(data) % 4
         if padding > 0:
             data += b'='* (4 - padding)
