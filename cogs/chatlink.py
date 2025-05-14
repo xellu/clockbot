@@ -164,8 +164,11 @@ class ChatLink(commands.Cog):
         if data["content"].startswith("!"):
             try:
                 r = self.process_command(data["content"], data["author"]["name"])                
-                if r in [None, False]:
-                    CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", str(r)))
+                if r == False:
+                    CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", "Unknown Command"))
+                    return
+                    
+                CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", str(r)))
                     
             except Exception as e:
                 CommandLogger.error(f"ChatLink: Failed to process command {data['content']} from {data['author']['name']}: {e}")
