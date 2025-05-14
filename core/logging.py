@@ -69,14 +69,15 @@ class LoggingManager:
             severity = severity.value
 
         source = self.name if not override_source else override_source
-        content = {
-            "message": str(message),
-            "severity": severity,
-            "timestamp": {
-                "raw": time.time(),
-                "formatted": self.generate_timestamp()
-            }
-        }
+        # content = {
+        #     "message": str(message),
+        #     "severity": severity,
+        #     "timestamp": {
+        #         "raw": time.time(),
+        #         "formatted": self.generate_timestamp()
+        #     }
+        # }
+        content = f"{self.generate_timestamp()} [{self.name}/{Labels.get(severity, 'UNKNOWN')}] {message}"
 
         if severity == Severity.DEBUG:
             if self.config == None:
