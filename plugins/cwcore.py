@@ -225,18 +225,23 @@ class ClockworkCoreAdapter:
         # logger.debug(data)
         
         data = data[len(b"clockwork$"):]
-        
-        padding = len(data) % 4
-        if padding > 0:
-            data += b'='* (4 - padding)
+        data = self.fix_pad(data)
         
         data = gzip.decompress(base64.b64decode(data))
+        data = self.fix_pad(data)
+        
         data = self.aes_cipher.decrypt(base64.b64decode(data))
         data = unpad(data, 16).decode("utf-8")
         data = json.loads(data)
         
         logger.debug(f"IN <- {data}")
         
+        return data
+
+    def fix_pad(data: bytes) -> bytes:
+        padding = len(data) % 4
+        if padding > 0:
+            data += b'='* (4 - padding)
         return data
 
     def whitelist_add(self, uuid: str) -> None:
