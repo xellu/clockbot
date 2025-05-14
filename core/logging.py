@@ -69,15 +69,15 @@ class LoggingManager:
             severity = severity.value
 
         source = self.name if not override_source else override_source
-        # content = {
-        #     "message": str(message),
-        #     "severity": severity,
-        #     "timestamp": {
-        #         "raw": time.time(),
-        #         "formatted": self.generate_timestamp()
-        #     }
-        # }
-        content = f"{self.generate_timestamp()} [{self.name}/{Labels.get(severity, 'UNKNOWN')}] {message}"
+        content = {
+            "message": str(message),
+            "severity": severity,
+            "timestamp": {
+                "raw": time.time(),
+                "formatted": self.generate_timestamp()
+            }
+        }
+        raw = f"{content['timestamp']} [{self.name}/{str(Labels.get(severity, 'UNKNOWN')).upper()}] {message}"
 
         if severity == Severity.DEBUG:
             if self.config == None:
@@ -107,7 +107,7 @@ class LoggingManager:
         print(f"{Fore.LIGHTBLACK_EX}[{content['timestamp']['formatted']}] {Colors.get(severity, Fore.CYAN)}[{source.upper()}] {Fore.RESET}{content['message']}")
 
         with open(self.path, 'a') as f:
-            f.write("\n" + json.dumps(content))
+            f.write("\n" + json.dumps(raw))
 
     def debug(self, message: str):
         """
