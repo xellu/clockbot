@@ -228,6 +228,8 @@ class ClockworkCoreAdapter:
         
         data = self.fix_pad(data)
         data = base64.b64decode(data)
+        if len(data) == 1265:
+            data += b"==="
         
         data = gzip.decompress(data)
         data = self.fix_pad(data)
@@ -243,9 +245,6 @@ class ClockworkCoreAdapter:
     def fix_pad(self, data: bytes) -> bytes:
         padding = len(data) % 4
         data += b"=" * padding
-        
-        if padding == 1:
-            data = data[:-1]
          
         return data
 
