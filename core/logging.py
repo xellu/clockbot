@@ -107,7 +107,7 @@ class LoggingManager:
         print(f"{Fore.LIGHTBLACK_EX}[{content['timestamp']['formatted']}] {Colors.get(severity, Fore.CYAN)}[{source.upper()}] {Fore.RESET}{content['message']}")
 
         with open(self.path, 'a') as f:
-            f.write("\n" + json.dumps(raw))
+            f.write("\n" + raw)
 
     def debug(self, message: str):
         """
