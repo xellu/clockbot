@@ -238,11 +238,11 @@ class ClockworkCoreAdapter:
         
         return data
 
-    def fix_pad(self, data: bytes, pad_to: int = 4) -> bytes:
-        padding = len(data) % pad_to
-        data += b"=" * padding
-         
-        return data
+    def fix_pad(self, data: bytes) -> bytes:
+        padding = len(data) % 4
+        if padding > 0:
+            data += b'='* (4 - padding)
+        return data         
 
     def whitelist_add(self, uuid: str) -> None:
         """
