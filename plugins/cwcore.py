@@ -241,13 +241,15 @@ class ClockworkCoreAdapter:
         return data
 
     def fix_pad(self, data: bytes) -> bytes:
-        while True:
-            padding = len(data) % 4
-            if padding == 0:
-                break
+        #fixes gzip padding
+        if data.endswith(b"\n"):
+            data = data[:-1]
             
-            data += b'='* (4 - padding)
-       
+        #fixes b64 padding
+        padding = len(data) % 4
+        if padding != 0:
+            data += b"=" * (4 - padding)
+        
         return data
 
     def whitelist_add(self, uuid: str) -> None:
