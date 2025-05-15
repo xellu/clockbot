@@ -242,6 +242,7 @@ class ClockworkCoreAdapter:
         padding = len(data) % 4
         if padding > 0:
             data += b'='* (4 - padding)
+        logger.info(len(data))
         return data
 
     def whitelist_add(self, uuid: str) -> None:

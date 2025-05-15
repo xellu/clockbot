@@ -77,7 +77,7 @@ class LoggingManager:
                 "formatted": self.generate_timestamp()
             }
         }
-        raw = f"{content['timestamp']} [{self.name}/{str(Labels.get(severity, 'UNKNOWN')).upper()}] {message}"
+        raw = f"{content['timestamp']['formatted']} [{self.name}/{str(Labels.get(severity, 'UNKNOWN')).upper()}] {message}"
 
         if severity == Severity.DEBUG:
             if self.config == None:
