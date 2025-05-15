@@ -241,10 +241,13 @@ class ClockworkCoreAdapter:
         return data
 
     def fix_pad(self, data: bytes) -> bytes:
-        padding = len(data) % 4
-        if padding > 0:
+        while True:
+            padding = len(data) % 4
+            if padding == 0:
+                break
+            
             data += b'='* (4 - padding)
-        # logger.info(len(data))
+       
         return data
 
     def whitelist_add(self, uuid: str) -> None:
