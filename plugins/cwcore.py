@@ -220,7 +220,7 @@ class ClockworkCoreAdapter:
         if not data.startswith(b"clockwork$"):
             return {}
         
-        logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
+        # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
         
         data = data.split("clockwork$")[1]
