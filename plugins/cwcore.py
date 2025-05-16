@@ -222,10 +222,8 @@ class ClockworkCoreAdapter:
         
         # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
-        logger.debug(data)
         
         data = data[len(b"clockwork$"):]
-        data = self.fix_pad(data)
         data = base64.b64decode(data)
         
         data = gzip.decompress(data)
