@@ -241,11 +241,17 @@ class ClockworkCoreAdapter:
         return data
 
     def fix_pad(self, data: bytes) -> bytes:
-        padding = len(data) % 4
-        if padding > 0:
-            data += b'='* (4 - padding)
-        return data         
-
+        string_base64 = data.decode()
+        string_base64 = string_base64.strip('=')
+        data_len = len(string_base64) % 4
+        if data_len == 1:
+            string_base64 = string_base64[:-1]
+        elif data_len:
+            padding_len = 4 - data_len
+            string_base64 += padding_len * '='
+        decodedBytes = base64.b64decode(string_base64)
+        return decodedBytes
+        
     def whitelist_add(self, uuid: str) -> None:
         """
         Add a player to the whitelist.
