@@ -223,7 +223,7 @@ class ClockworkCoreAdapter:
         # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
         
-        data = data.replace("clockwork$")
+        data = data.replace("clockwork$", "")
         data = self.fix_pad(data)
         logger.debug(data)
 
