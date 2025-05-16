@@ -220,10 +220,13 @@ class ClockworkCoreAdapter:
         if not data.startswith(b"clockwork$"):
             return {}
         
-        # logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
+        logger.info(f"IN (raw) <- {data.decode('utf-8').replace('\n', '\\n')}")
         
         
         data = data[len(b"clockwork$"):]
+        data = self.fix_pad(data)
+        logger.debug(data)
+
         data = base64.b64decode(data)
         
         data = gzip.decompress(data)
