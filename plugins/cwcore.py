@@ -224,11 +224,13 @@ class ClockworkCoreAdapter:
         
         
         data = data.replace(b"clockwork$", b"")
+        # logger.debug(data)
+
         data = self.decode_b64(data)
         # logger.debug(data)
         
         data = gzip.decompress(data)
-        data = base64.b64encode(data)
+        data = base64.b64decode(data)
         
         data = self.aes_cipher.decrypt(data)
         data = unpad(data, 16).decode("utf-8")
@@ -245,7 +247,7 @@ class ClockworkCoreAdapter:
         if data_len == 1:
             string_base64 = string_base64[:-1]
         elif data_len:
-            padding_len = 4 - data_len - 1
+            padding_len = 4 - data_len
             string_base64 += padding_len * '='
         decodedBytes = base64.b64decode(string_base64)
         return decodedBytes
