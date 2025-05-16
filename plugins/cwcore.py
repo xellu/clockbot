@@ -225,10 +225,10 @@ class ClockworkCoreAdapter:
         
         data = data.replace(b"clockwork$", b"")
         data = self.decode_b64(data)
-        logger.debug(data)
+        # logger.debug(data)
         
         data = gzip.decompress(data)
-        data = self.decode_b64(data)
+        data = base64.b64encode(data)
         
         data = self.aes_cipher.decrypt(data)
         data = unpad(data, 16).decode("utf-8")
