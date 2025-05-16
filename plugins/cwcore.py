@@ -247,7 +247,7 @@ class ClockworkCoreAdapter:
         if data_len == 1:
             string_base64 = string_base64[:-1]
         elif data_len:
-            padding_len = 4 - data_len
+            padding_len = 4 - data_len - 1
             string_base64 += padding_len * '='
         decodedBytes = base64.b64decode(string_base64)
         return decodedBytes
