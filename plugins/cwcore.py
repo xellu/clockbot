@@ -224,15 +224,13 @@ class ClockworkCoreAdapter:
         
         
         data = data.replace(b"clockwork$", b"")
-        data = self.fix_pad(data)
+        data = self.decode_b64(data)
         logger.debug(data)
-
-        data = base64.b64decode(data)
         
         data = gzip.decompress(data)
-        data = self.fix_pad(data)
+        data = self.decode_b64(data)
         
-        data = self.aes_cipher.decrypt(base64.b64decode(data))
+        data = self.aes_cipher.decrypt(data)
         data = unpad(data, 16).decode("utf-8")
         data = json.loads(data)
         
@@ -240,7 +238,7 @@ class ClockworkCoreAdapter:
         
         return data
 
-    def fix_pad(self, data: bytes) -> bytes:
+    def decode_b64(self, data: bytes) -> bytes:
         string_base64 = data.decode()
         string_base64 = string_base64.strip('=')
         data_len = len(string_base64) % 4
