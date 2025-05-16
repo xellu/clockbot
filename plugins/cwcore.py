@@ -226,8 +226,9 @@ class ClockworkCoreAdapter:
         
         data = data[len(b"clockwork$"):]
         data = self.fix_pad(data)
+        data = base64.b64decode(data)
         
-        data = gzip.decompress(base64.b64decode(data))
+        data = gzip.decompress(data)
         data = self.fix_pad(data)
         
         data = self.aes_cipher.decrypt(base64.b64decode(data))
