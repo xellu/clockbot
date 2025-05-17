@@ -7,7 +7,7 @@ from mdbb import Bot, Config, CommandLogger, Colors, DB
 
 from core.config import ConfigManager
 from core.templates.UserTemplate import UserTemplate, WLStatus
-from core.utils import get_mc_username, get_mc_uuid
+from core.utils import get_mc_username, get_mc_uuid, escape_md
 from core.users import UserManager
 
 from plugins.cwcore import CWCore
@@ -67,7 +67,7 @@ class ClockAPI(commands.Cog):
         
         await ctx.response.defer(ephemeral=True)
         
-        mc_username = get_mc_username(user.get()["minecraft"]).replace('_', '\\_')
+        mc_username = escape_md(get_mc_username(user.get()["minecraft"]))
         
         seen = user.get_seen(md=True)
         embed = Embed(
@@ -111,9 +111,9 @@ class ClockAPI(commands.Cog):
 
         last_seen = seen.meta        
         if seen.meta == "Never":
-            last_seen = f"{mc_username.replace('_', '\\_')} has never been seen"
+            last_seen = f"{escape_md(mc_username)} has never been seen"
         elif seen.meta == "Online":
-            last_seen = f"{mc_username.replace('_', '\\_')} is currently online"
+            last_seen = f"{escape_md(mc_username)} is currently online"
             
         await ctx.response.send_message(embed=Embed(
             title = "Last Seen",
@@ -141,7 +141,7 @@ class ClockAPI(commands.Cog):
         await ctx.response.send_message(embed=Embed(
             title = f"Lookup",
             description  = f"""
-**Minecraft:** {get_mc_username(user.get()["minecraft"]).replace('_', '\\_')} `{user.get()['minecraft']}`
+**Minecraft:** {escape_md(get_mc_username(user.get()["minecraft"]))} `{user.get()['minecraft']}`
 **Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
 **ClockID:** `{user.get()['_id']}`
 
@@ -208,7 +208,7 @@ class ClockAPI(commands.Cog):
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Linked a Minecraft account {minecraft_username.replace('_', '\\_')} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
+                    description = f"Linked a Minecraft account {escape_md(minecraft_username)} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 
@@ -223,7 +223,7 @@ class ClockAPI(commands.Cog):
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Re-linked the Minecraft account `{minecraft_username.replace('_', '\\_')}` to <@{user.get()['discord']}>'s profile",
+                    description = f"Re-linked the Minecraft account `{escape_md(minecraft_username)}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 

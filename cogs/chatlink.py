@@ -5,7 +5,7 @@ import time
 import re
 
 from mdbb import Bot, Config, CommandLogger, Colors, DB
-from core.utils import get_mc_username, get_mc_uuid, random_str, parse_time
+from core.utils import get_mc_username, get_mc_uuid, random_str, parse_time, escape_md
 from core.users import UserManager
 
 from plugins.cwcore import CWCore, CWChatMessage
@@ -156,7 +156,7 @@ class ChatLink(commands.Cog):
             
             self.queue.append(CLMessage(embed=Embed(
                 title = f"[{initial}] {name}",
-                description = f"**{data['author']['name'].replace('_', '\\_')}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
+                description = f"**{escape_md(data['author']['name'])}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
                 color = Colors.DEFAULT
             )))
             return
@@ -177,7 +177,7 @@ class ChatLink(commands.Cog):
                 
             if r != None: return 
         
-        self.queue.append(CLMessage(f"**{data['author']['name'].replace('_', '\\_')}:** {data['content']}"))
+        self.queue.append(CLMessage(f"**{escape_md(data['author']['name'])}:** {data['content']}"))
         
     def on_player_join(self, data):
         """
@@ -187,7 +187,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{data['name'].replace('_', '\\_')}** has joined",
+            description = f"**{escape_md(data['name'])}** has joined",
             color = Colors.OK
         )))
         
@@ -204,7 +204,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{data['name'].replace('_', '\\_')}** has left",
+            description = f"**{escape_md(data['name'])}** has left",
             color = Colors.ERROR
         )))
         

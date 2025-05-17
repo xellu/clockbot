@@ -2,6 +2,8 @@ from discord.ext import commands, tasks
 from discord import app_commands, Embed
 
 from mdbb import Bot, Config, CommandLogger, Colors, EventBus
+
+from core.utils import escape_md
 from plugins.cwcore import CWCore
 
 import enum
@@ -171,6 +173,6 @@ class Status(commands.Cog):
         
         await ctx.followup.send(embed=Embed(
             title = "Online Players",
-            description = f"""*There are {CWCore.status['online']['count']} players online at this moment*\n\n{', '.join(p['name'].replace('_', '\\_') for p in CWCore.status['online']['list'])}\n""",
+            description = f"""*There are {CWCore.status['online']['count']} players online at this moment*\n\n{', '.join(escape_md(p['name']) for p in CWCore.status['online']['list'])}\n""",
             color = Colors.DEFAULT
         ))

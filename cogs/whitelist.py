@@ -7,8 +7,7 @@ import time
 from mdbb import Config, Bot, Colors, CommandLogger, DB
 
 from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate, WLKeyNames
-from core.templates.Messages import apply_for_whitelist_msg
-from core.utils import get_mc_username, get_mc_uuid, random_str
+from core.utils import get_mc_username, get_mc_uuid, random_str, escape_md
 from core.users import UserManager
 
 from plugins.cwcore import CWCore, CWChatMessage
@@ -130,7 +129,7 @@ class Whitelist(commands.Cog):
                 
             embed = Embed(
                 title = "Whitelist Application",
-                description = f"**{username.replace('_', '\\_')}** (<@{app['discord']}>) has applied for whitelist",
+                description = f"**{escape_md(username)}** (<@{app['discord']}>) has applied for whitelist",
                 color = Colors.OK
             )
             for key, value in app["answers"].items():
@@ -246,7 +245,7 @@ class Whitelist(commands.Cog):
             reason = "No reason provided"
             
         embed = Embed(
-            description = f"🚫 {get_mc_username(user['minecraft'])} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
+            description = f"🚫 {escape_md(get_mc_username(user['minecraft']))} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
             color = Colors.ERROR
         )
         await self.announce_channel.send(embed=embed)
@@ -257,7 +256,7 @@ class Whitelist(commands.Cog):
         
         _user = UserManager(discord=user.id)
         embed = Embed(
-            description = f"✅ {get_mc_username(_user.get()['minecraft']).replace('_', '\\_')} (<@{user.id}>) was whitelisted by <@{moderator}>",
+            description = f"✅ {escape_md(get_mc_username(_user.get()['minecraft']))} (<@{user.id}>) was whitelisted by <@{moderator}>",
             color = Colors.OK
         )
         await self.announce_channel.send(user.mention, embed=embed)
@@ -267,7 +266,7 @@ class Whitelist(commands.Cog):
         if not self.announce_channel: return
         
         embed = Embed(
-            description = f"🚫 {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} (<@{user.get()['discord']}>) was rejected for:\n> `{reason}`",
+            description = f"🚫 {escape_md(get_mc_username(user.get()['minecraft']))} (<@{user.get()['discord']}>) was rejected for:\n> `{reason}`",
             color = Colors.ERROR
         )
         await self.announce_channel.send(f"<@{user.get()['discord']}>", embed=embed)
@@ -314,7 +313,7 @@ class Whitelist(commands.Cog):
                 await self.announce_delist(user_data, action["reason"])
                               
                 await interaction.followup.send(embed=Embed(
-                    description = f"✅ {get_mc_username(user_data['minecraft']).replace('_', '\\_')} was removed from whitelist:\n> `{action['reason']}`",
+                    description = f"✅ {escape_md(get_mc_username(user_data['minecraft']))} was removed from whitelist:\n> `{action['reason']}`",
                     color = Colors.OK
                 ), ephemeral=True)
                 
@@ -338,7 +337,7 @@ class Whitelist(commands.Cog):
                     user.update()
                     
                     await interaction.followup.send(embed=Embed(
-                        description = f"✅ {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
+                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft'])} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
                         color = Colors.OK
                     ), ephemeral=True)
                     await msg.delete()
@@ -353,7 +352,7 @@ class Whitelist(commands.Cog):
                 user.update()
                 
                 await interaction.followup.send(embed=Embed(
-                    description = f"✅ {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} was whitelisted",
+                    description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was whitelisted",
                     color = Colors.OK
                 ), ephemeral=True)
                 await msg.delete()

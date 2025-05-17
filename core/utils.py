@@ -69,3 +69,16 @@ def parse_time(num: int):
         out += f"{int(num)}s"
         
     return out.strip()
+
+def escape_md(text):
+    """Escape markdown characters in a string"""
+    if not text:
+        return ""
+    
+    # List of markdown characters to escape
+    markdown_chars = ["*", "_", "`", "~", "|", ">", "#", "+", "-", "=", "!", "[", "]", "(", ")", "{", "}", ".", ":"]
+
+    for char in markdown_chars:
+        text = text.replace(char, f"\\{char}")
+    
+    return text
