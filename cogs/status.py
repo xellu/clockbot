@@ -171,6 +171,6 @@ class Status(commands.Cog):
         
         await ctx.followup.send(embed=Embed(
             title = "Online Players",
-            description = f"""*There are {CWCore.status['online']['count']} players online at this moment*\n\n{', '.join(p['name'] for p in CWCore.status['online']['list'])}\n""",
+            description = f"""*There are {CWCore.status['online']['count']} players online at this moment*\n\n{', '.join(p['name'].replace('_', '\\_') for p in CWCore.status['online']['list'])}\n""",
             color = Colors.DEFAULT
         ))
