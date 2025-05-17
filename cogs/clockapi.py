@@ -143,14 +143,32 @@ class ClockAPI(commands.Cog):
             description  = f"""
 **Minecraft:** {get_mc_username(user.get()["minecraft"]).replace('_', '\\_')} `{user.get()['minecraft']}`
 **Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
+**ClockID:** `{user.get()['_id']}`
+
 **Last Seen:** {user.get_seen(md=True).meta}
+**First Joined:** <t:{int(user.get()['created_at'])}:R> <t:{int(user.get()['created_at'])}:f>
+
+**Whitelist:** {user.get()['whitelist']["status"]}
             """,
             color = Colors.DEFAULT
         ).set_thumbnail(url=f"https://mc-heads.net/body/{user.get()['minecraft']}"), ephemeral=True)
         
+    @app_commands.command(name="deletefrc", description="Forcefully delete a user")
+    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.describe(uuid="UUID of the minecraft account")
+    async def force_delete(self, ctx, uuid: str):
+        await ctx.response.defer(ephemeral=True)
+        
+        DB.get("clockbot").users.delete_one({"minecraft": uuid})
+        
+        await ctx.followup.send(embed=Embed(
+            title = "Force Delete",
+            description = f"Deleted user with UUID `{uuid}`",
+            color = Colors.OK
+        ), ephemeral=True)
     
     @app_commands.command(name="account", description="Manage user accounts. Users who are created will have automatically approved whitelists")
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.describe(
         user = "User to manage",
         action = "Action to perform",
@@ -161,7 +179,10 @@ class ClockAPI(commands.Cog):
         action: AccountManagerActions,
         minecraft_username: str = None,
     ):
+        
         user = UserManager(discord=user.id)
+        if minecraft_username and action == AccountManagerActions.Delete:
+            user = UserManager(minecraft=minecraft_username)
 
         match action:
             case AccountManagerActions.Unlink:

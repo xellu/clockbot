@@ -7,6 +7,19 @@ class WLStatus(Enum):
     PENDING = "Pending"
     REJECTED = "Rejected"
     APPROVED = "Approved"
+    
+WLKeyNames = {
+    "age": "Age",
+    "region": "Region",
+    "howFound": "How did you find us?",
+    "whyJoin": "What interests you about the server?",
+    "playedSMPs": "Have you played on any other SMPs?",
+    "playedCreate": "Have you played with Create Mod before?",
+    "goodAt": "What are you good at?",
+    "joinTown": "Do you want to be a part of any town?",
+    "friendsPlaying": "Do you have any friends playing on the server?",
+    "note": "Anything else you want to add?",
+}
 
 def UserTemplate():
     return {
@@ -19,7 +32,8 @@ def UserTemplate():
             "status": WLStatus.PENDING.value, #Whitelist status
             "moderator": None, #Moderator who approved/rejected the whitelist (their Discord ID)
             "reapply_in": None, #timestamp of when the user can reapply for whitelist (only if rejected)
-            "reason": None #Reason for rejection
+            "reason": None, #Reason for rejection
+            "answers": {} #Whitelist apply answers
         },
         
         "created_at": time.time(), #timestamp of when the user was created

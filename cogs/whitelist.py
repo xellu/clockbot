@@ -6,7 +6,7 @@ import time
 
 from mdbb import Config, Bot, Colors, CommandLogger, DB
 
-from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate
+from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate, WLKeyNames
 from core.templates.Messages import apply_for_whitelist_msg
 from core.utils import get_mc_username, get_mc_uuid, random_str
 from core.users import UserManager
@@ -58,6 +58,7 @@ class Whitelist(commands.Cog):
         #---------
         
         self.update_members.start()
+        self.check_for_whitelists.start()
         CWCore.event.register("player.join", self.on_player_join)
     
     #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
@@ -87,6 +88,79 @@ class Whitelist(commands.Cog):
         )
         CommandLogger.info(f"Unregistered player {data['name']} joined, sending migration notice")
     #-----------------------------------------------------------------------
+        
+    # get new whitelist applications
+    @tasks.loop(seconds=60)
+    async def check_for_whitelists(self):
+        if not self.enabled: return
+        
+        applications = DB.get("clockbot").whitelist.find({})
+        for app in applications:
+            username = get_mc_username(app["minecraft"])
+            if not app.get("minecraft") or not username:
+                CommandLogger.error(f"Whitelist: Invalid UUID {app['minecraft']}")
+                DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
+                continue
+            
+            user = UserManager(
+                discord = app["discord"],
+            )
+            
+            if (user.is_valid() or UserManager(minecraft=username).is_valid()) and user.get()["whitelist"]["status"] in [WLStatus.PENDING.value, WLStatus.APPROVED.value]:
+                CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} already exists")
+                DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
+                continue
+            
+            if user.is_valid() and user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < user.get()["whitelist"]["reapply_in"]:
+                CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} is not allowed to reapply")
+                continue
+            
+            if not user.is_valid():
+                user.create(
+                    discord = app["discord"],
+                    minecraft = username
+                )
+                
+                user.user["whitelist"]["status"] = WLStatus.PENDING.value
+                user.user["whitelist"]["moderator"] = None
+                user.user["whitelist"]["reapply_in"] = None
+                user.user["whitelist"]["reason"] = None
+                user.user["whitelist"]["answers"] = app["answers"]
+                user.update()
+                
+            embed = Embed(
+                title = "Whitelist Application",
+                description = f"**{username.replace('_', '\\_')}** (<@{app['discord']}>) has applied for whitelist",
+                color = Colors.OK
+            )
+            for key, value in app["answers"].items():
+                if isinstance(value, list):
+                    value = ", ".join(value) if value else "N/A"
+                if value is None:
+                    value = "N/A"
+                               
+                embed.add_field(name=WLKeyNames.get(key, key), value=f"`{value}`", inline=False)
+                
+            view = discord.ui.View(timeout=None)
+            view.add_item(discord.ui.Button(label="Approve", style=discord.ButtonStyle.success, custom_id="ok"))
+            
+            select = discord.ui.Select(placeholder="Reject for", custom_id="ok-reject")
+            select.add_option(label="Underage", value="Underage")
+            select.add_option(label="Inappropriate content", value="Inappropriate content")
+            select.add_option(label="Not enough information", value="Not enough information")
+            select.add_option(label="Other", value="Other")
+            
+            view.add_item(select)
+            
+            msg = await self.admin_channel.send(embed=embed, view=view)
+            action = ActionTemplate()
+            action["id"] = f"WLAP-{random_str(8)}"
+            action["msg"] = msg.id
+            action["type"] = "wl-add"
+            action["user"] = app["discord"]
+            
+            DB.get("clockbot").actions.insert_one(action)
+            DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
         
     #sync member roles with whitelist status
     @tasks.loop(seconds=300)
@@ -121,8 +195,9 @@ class Whitelist(commands.Cog):
         
         for user in DB.get("clockbot").users.find({"discord": {"$nin": processed}}): #delete users that left the server
             user = UserManager(discord=user["discord"])
-            discord_user = await self.bot.fetch_user(user.get()['discord'])
-            if not discord_user:
+            try:
+                discord_user = await self.bot.fetch_user(user.get()['discord'])
+            except:
                 discord_user = PhantomUser(user.get()['discord'])
 
             await self.suggest_delist(discord_user, "User left the server")          
@@ -187,12 +262,22 @@ class Whitelist(commands.Cog):
         )
         await self.announce_channel.send(user.mention, embed=embed)
         
+    async def announce_reject(self, user: UserManager, reason: str = None):
+        if not self.enabled: return
+        if not self.announce_channel: return
+        
+        embed = Embed(
+            description = f"🚫 {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} (<@{user.get()['discord']}>) was rejected for:\n> `{reason}`",
+            color = Colors.ERROR
+        )
+        await self.announce_channel.send(f"<@{user.get()['discord']}>", embed=embed)
+        
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
         if not self.enabled: return
         
         msg = interaction.message
-        approved = interaction.data.get("custom_id") == "ok" 
+        approved = interaction.data.get("custom_id") in ["ok", "ok-reject"]
         
         if not msg: return
                 
@@ -236,6 +321,43 @@ class Whitelist(commands.Cog):
                 await msg.delete()
                   
             case "wl-add":
-                pass
-        
+                user = UserManager(discord=action["user"])
+                if not user.is_valid():
+                    await interaction.followup.send(embed=Embed(
+                        description = "🚫 User not found",
+                        color = Colors.ERROR
+                    ), ephemeral=True)
+                    await msg.delete()
+                    return
+                
+                if interaction.data.get("custom_id") == "ok-reject":
+                    user.user["whitelist"]["status"] = WLStatus.REJECTED.value
+                    user.user["whitelist"]["moderator"] = interaction.user.id
+                    user.user["whitelist"]["reapply_in"] = time.time() + 604800
+                    user.user["whitelist"]["reason"] = interaction.data.get("values")[0]
+                    user.update()
+                    
+                    await interaction.followup.send(embed=Embed(
+                        description = f"✅ {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
+                        color = Colors.OK
+                    ), ephemeral=True)
+                    await msg.delete()
+                    await self.announce_reject(user, interaction.data.get("values")[0])
+                    
+                    return
+                
+                user.user["whitelist"]["status"] = WLStatus.APPROVED.value
+                user.user["whitelist"]["moderator"] = interaction.user.id
+                user.user["whitelist"]["reapply_in"] = None
+                user.user["whitelist"]["reason"] = None
+                user.update()
+                
+                await interaction.followup.send(embed=Embed(
+                    description = f"✅ {get_mc_username(user.get()['minecraft']).replace('_', '\\_')} was whitelisted",
+                    color = Colors.OK
+                ), ephemeral=True)
+                await msg.delete()
+                
+                member = await self.guild.fetch_member(user.get()["discord"])
+                await self.announce_whitelist(member, user.get()["whitelist"]["moderator"])
                 

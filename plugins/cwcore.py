@@ -199,6 +199,7 @@ class ClockworkCoreAdapter:
         
         if not self.socket or (not self.logged_in and kwargs["packetId"] != CWPackets.LOGIN):
             self.queue.append(kwargs)
+            kwargs.pop("key")
             logger.warn(f"Packet queued: {kwargs}")
             return
         
