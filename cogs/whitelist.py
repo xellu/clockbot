@@ -337,7 +337,7 @@ class Whitelist(commands.Cog):
                     user.update()
                     
                     await interaction.followup.send(embed=Embed(
-                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft'])} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
+                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
                         color = Colors.OK
                     ), ephemeral=True)
                     await msg.delete()
