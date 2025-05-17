@@ -266,7 +266,7 @@ class Whitelist(commands.Cog):
         if not self.announce_channel: return
         
         embed = Embed(
-            description = f"🚫 {escape_md(get_mc_username(user.get()['minecraft']))} (<@{user.get()['discord']}>) was rejected for:\n> `{reason}`",
+            description = f"🚫 {escape_md(get_mc_username(user.get()['minecraft']))} (<@{user.get()['discord']}>) was rejected for `{reason}`, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>",
             color = Colors.ERROR
         )
         await self.announce_channel.send(f"<@{user.get()['discord']}>", embed=embed)
@@ -337,7 +337,7 @@ class Whitelist(commands.Cog):
                     user.update()
                     
                     await interaction.followup.send(embed=Embed(
-                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for `{interaction.data.get('values')[0]}, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>`",
+                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for:\n> `{interaction.data.get('values')[0]}`",
                         color = Colors.OK
                     ), ephemeral=True)
                     await msg.delete()
