@@ -67,7 +67,7 @@ class ClockAPI(commands.Cog):
         
         await ctx.response.defer(ephemeral=True)
         
-        mc_username = get_mc_username(user.get()["minecraft"])
+        mc_username = get_mc_username(user.get()["minecraft"]).replace('_', '\\_')
         
         seen = user.get_seen(md=True)
         embed = Embed(
@@ -111,9 +111,9 @@ class ClockAPI(commands.Cog):
 
         last_seen = seen.meta        
         if seen.meta == "Never":
-            last_seen = f"{mc_username} has never been seen"
+            last_seen = f"{mc_username.replace('_', '\\_')} has never been seen"
         elif seen.meta == "Online":
-            last_seen = f"{mc_username} is currently online"
+            last_seen = f"{mc_username.replace('_', '\\_')} is currently online"
             
         await ctx.response.send_message(embed=Embed(
             title = "Last Seen",
@@ -141,7 +141,7 @@ class ClockAPI(commands.Cog):
         await ctx.response.send_message(embed=Embed(
             title = f"Lookup",
             description  = f"""
-**Minecraft:** {get_mc_username(user.get()["minecraft"])} `{user.get()['minecraft']}`
+**Minecraft:** {get_mc_username(user.get()["minecraft"]).replace('_', '\\_')} `{user.get()['minecraft']}`
 **Discord:** <@{user.get()['discord']}> `{user.get()['discord']}`
 **Last Seen:** {user.get_seen(md=True).meta}
             """,
@@ -187,7 +187,7 @@ class ClockAPI(commands.Cog):
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Linked a Minecraft account {minecraft_username} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
+                    description = f"Linked a Minecraft account {minecraft_username.replace('_', '\\_')} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 
@@ -202,7 +202,7 @@ class ClockAPI(commands.Cog):
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Re-linked the Minecraft account `{minecraft_username}` to <@{user.get()['discord']}>'s profile",
+                    description = f"Re-linked the Minecraft account `{minecraft_username.replace('_', '\\_')}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 

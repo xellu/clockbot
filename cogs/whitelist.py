@@ -6,7 +6,7 @@ import time
 
 from mdbb import Config, Bot, Colors, CommandLogger, DB
 
-from core.templates.UserTemplate import UserTemplate, ApplicationTemplate, WLStatus, ActionTemplate
+from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate
 from core.templates.Messages import apply_for_whitelist_msg
 from core.utils import get_mc_username, get_mc_uuid, random_str
 from core.users import UserManager
@@ -182,7 +182,7 @@ class Whitelist(commands.Cog):
         
         _user = UserManager(discord=user.id)
         embed = Embed(
-            description = f"✅ {get_mc_username(_user.get()['minecraft'])} (<@{user.id}>) was whitelisted by <@{moderator}>",
+            description = f"✅ {get_mc_username(_user.get()['minecraft']).replace('_', '\\_')} (<@{user.id}>) was whitelisted by <@{moderator}>",
             color = Colors.OK
         )
         await self.announce_channel.send(user.mention, embed=embed)
@@ -229,7 +229,7 @@ class Whitelist(commands.Cog):
                 await self.announce_delist(user_data, action["reason"])
                               
                 await interaction.followup.send(embed=Embed(
-                    description = f"✅ {get_mc_username(user_data['minecraft'])} was removed from whitelist:\n> `{action['reason']}`",
+                    description = f"✅ {get_mc_username(user_data['minecraft']).replace('_', '\\_')} was removed from whitelist:\n> `{action['reason']}`",
                     color = Colors.OK
                 ), ephemeral=True)
                 

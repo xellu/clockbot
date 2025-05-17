@@ -156,7 +156,7 @@ class ChatLink(commands.Cog):
             
             self.queue.append(CLMessage(embed=Embed(
                 title = f"[{initial}] {name}",
-                description = f"**{data['author']['name']}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
+                description = f"**{data['author']['name'].replace('_', '\\_')}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
                 color = Colors.DEFAULT
             )))
             return
@@ -177,7 +177,7 @@ class ChatLink(commands.Cog):
                 
             if r != None: return 
         
-        self.queue.append(CLMessage(f"**{data['author']['name']}:** {data['content']}"))
+        self.queue.append(CLMessage(f"**{data['author']['name'].replace('_', '\\_')}:** {data['content']}"))
         
     def on_player_join(self, data):
         """
@@ -187,7 +187,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{data['name']}** has joined",
+            description = f"**{data['name'].replace('_', '\\_')}** has joined",
             color = Colors.OK
         )))
         
@@ -204,7 +204,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{data['name']}** has left",
+            description = f"**{data['name'].replace('_', '\\_')}** has left",
             color = Colors.ERROR
         )))
         

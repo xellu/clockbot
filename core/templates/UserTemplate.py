@@ -25,21 +25,6 @@ def UserTemplate():
         "created_at": time.time(), #timestamp of when the user was created
     }
     
-def ApplicationTemplate(): 
-    return {
-        "user": 0,
-        
-        "index": 0, #question index
-        "channel": 0, #channel id where the application was sent
-        
-        "answers": {
-            #"question_id": answer,
-            #...
-        },
-        
-        "created_at": time.time(), #timestamp of when the application was created
-    }
-    
 def ActionTemplate():
     return {
         "id": f"GNRC-{random_str(8)}",
