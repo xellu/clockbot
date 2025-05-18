@@ -60,6 +60,67 @@ class Whitelist(commands.Cog):
         self.check_for_whitelists.start()
         CWCore.event.register("player.join", self.on_player_join)
     
+    @app_commands.command(name="answers", description="View answers for a user's whitelist application")
+    @app_commands.describe(discord="Discord user ID", minecraft="Minecraft username")
+    @app_commands.checks.has_permissions(ban_members=True)
+    async def view_answers(self, interaction: discord.Interaction, discord: discord.User = None, minecraft: str = None):
+        if not self.enabled: return
+        if not self.admin_channel: return
+        
+        await interaction.response.defer(thinking=True, ephemeral=True)
+        
+        if discord:
+            user = UserManager(discord=discord.id)
+            if not user.is_valid():
+                await interaction.followup.send(embed=Embed(
+                    description = "🚫 User not found",
+                    color = Colors.ERROR
+                ), ephemeral=True)
+                return
+            
+            answers = user.get()["whitelist"]["answers"]
+            username = get_mc_username(user.get()["minecraft"])
+        elif minecraft:
+            uuid = get_mc_uuid(minecraft)
+            if not uuid:
+                await interaction.followup.send(embed=Embed(
+                    description = "🚫 Invalid UUID",
+                    color = Colors.ERROR
+                ), ephemeral=True)
+                return
+            
+            user = UserManager(minecraft=uuid)
+            if not user.is_valid():
+                await interaction.followup.send(embed=Embed(
+                    description = "🚫 User not found",
+                    color = Colors.ERROR
+                ), ephemeral=True)
+                return
+            
+            answers = user.get()["whitelist"]["answers"]
+            username = minecraft
+        else:
+            await interaction.followup.send(embed=Embed(
+                description = "🚫 No user provided",
+                color = Colors.ERROR
+            ), ephemeral=True)
+            return
+        
+        embed = Embed(
+            title = f"Whitelist Application for {escape_md(username)}",
+            color = Colors.DEFAULT
+        )
+        
+        for key, value in answers.items():
+            if isinstance(value, list):
+                value = ", ".join(value) if value else "N/A"
+            if value is None:
+                value = "N/A"
+                
+            embed.add_field(name=WLKeyNames.get(key, key), value=f"`{value}`", inline=False)
+        
+        await interaction.followup.send(embed=embed, ephemeral=True)
+    
     #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
     def on_player_join(self, data): #send migration notice to the player
         if not self.enabled: return
