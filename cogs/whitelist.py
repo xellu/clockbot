@@ -427,6 +427,6 @@ class Whitelist(commands.Cog):
                 await msg.delete()
                 
                 member = self.guild.get_member(user.get()["discord"])
-                member.add_roles(self.membership_role)
+                await member.add_roles(self.membership_role)
                 await self.announce_whitelist(member, user.get()["whitelist"]["moderator"])
                 
