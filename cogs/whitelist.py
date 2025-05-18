@@ -390,7 +390,7 @@ class Whitelist(commands.Cog):
                 await interaction.followup.send(embed=Embed(
                     description = f"✅ {escape_md(get_mc_username(user_data['minecraft']))} was removed from whitelist:\n> `{action['reason']}`",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
                 
                 await msg.delete()
                   
@@ -412,7 +412,7 @@ class Whitelist(commands.Cog):
                     await interaction.followup.send(embed=Embed(
                         description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for:\n> `{interaction.data.get('values')[0]}`",
                         color = Colors.OK
-                    ), ephemeral=True)
+                    ))
                     await msg.delete()
                     await self.announce_reject(user, reason)
                     
@@ -423,10 +423,10 @@ class Whitelist(commands.Cog):
                 await interaction.followup.send(embed=Embed(
                     description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was whitelisted",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
                 await msg.delete()
                 
-                member = await self.guild.fetch_member(user.get()["discord"])
+                member = self.guild.get_member(user.get()["discord"])
                 member.add_roles(self.membership_role)
                 await self.announce_whitelist(member, user.get()["whitelist"]["moderator"])
                 
