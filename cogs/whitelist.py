@@ -306,12 +306,13 @@ class Whitelist(commands.Cog):
         
         if not reason:
             reason = "No reason provided"
-            
-        embed = Embed(
-            description = f"🚫 {escape_md(get_mc_username(user['minecraft']))} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
-            color = Colors.ERROR
-        )
-        await self.announce_channel.send(embed=embed)
+        
+        if user.get()["whitelist"]["status"] == WLStatus.APPROVED.value:
+            embed = Embed(
+                description = f"🚫 {escape_md(get_mc_username(user['minecraft']))} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
+                color = Colors.ERROR
+            )
+            await self.announce_channel.send(embed=embed)
         
     async def announce_whitelist(self, user: discord.Member, moderator: str):
         if not self.enabled: return
