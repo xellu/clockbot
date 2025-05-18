@@ -78,8 +78,10 @@ class Whitelist(commands.Cog):
                 ), ephemeral=True)
                 return
             
-            answers = user.get()["whitelist"]["answers"]
+            answers = user.get()["whitelist"].get("answers")
             username = get_mc_username(user.get()["minecraft"])
+            
+            
         elif minecraft:
             uuid = get_mc_uuid(minecraft)
             if not uuid:
@@ -106,10 +108,18 @@ class Whitelist(commands.Cog):
             ), ephemeral=True)
             return
         
+        if not answers:
+            await interaction.followup.send(embed=Embed(
+                description = "🚫 No answers found",
+                color = Colors.ERROR
+            ), ephemeral=True)
+            return
+        
         embed = Embed(
-            title = f"Whitelist Application for {escape_md(username)}",
+            title = f"Whitelist Application for {username}",
             color = Colors.DEFAULT
         )
+        
         
         for key, value in answers.items():
             if isinstance(value, list):
@@ -173,6 +183,7 @@ class Whitelist(commands.Cog):
             
             if user.is_valid() and user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < user.get()["whitelist"]["reapply_in"]:
                 CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} is not allowed to reapply")
+                DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
                 continue
             
             if not user.is_valid():
