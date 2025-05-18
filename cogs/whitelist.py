@@ -407,6 +407,7 @@ class Whitelist(commands.Cog):
                 if interaction.data.get("custom_id") == "ok-reject":
                     reason = interaction.data.get("values")[0]
                     
+                    await self.announce_reject(user, reason)
                     user.whitelist_reject(interaction.user.id, reason)
                     
                     await interaction.followup.send(embed=Embed(
@@ -414,7 +415,6 @@ class Whitelist(commands.Cog):
                         color = Colors.OK
                     ))
                     await msg.delete()
-                    await self.announce_reject(user, reason)
                     
                     return
                 
