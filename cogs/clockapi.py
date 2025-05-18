@@ -45,9 +45,7 @@ class ClockAPI(commands.Cog):
             await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
             return
         
-        user.user["whitelist"]["status"] = WLStatus.APPROVED.value
-        user.user["whitelist"]["moderator"] = self.bot.user.id
-        user.update()
+        user.whitelist_approve(self.bot.user.id)
         
         DB.get("clockbot").codes.delete_one({"code": code["code"]})
         
@@ -152,20 +150,6 @@ class ClockAPI(commands.Cog):
             """,
             color = Colors.DEFAULT
         ).set_thumbnail(url=f"https://mc-heads.net/body/{user.get()['minecraft']}"), ephemeral=True)
-        
-    @app_commands.command(name="deletefrc", description="Forcefully delete a user")
-    @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.describe(uuid="UUID of the minecraft account")
-    async def force_delete(self, ctx, uuid: str):
-        await ctx.response.defer(ephemeral=True)
-        
-        DB.get("clockbot").users.delete_one({"minecraft": uuid})
-        
-        await ctx.followup.send(embed=Embed(
-            title = "Force Delete",
-            description = f"Deleted user with UUID `{uuid}`",
-            color = Colors.OK
-        ), ephemeral=True)
     
     @app_commands.command(name="account", description="Manage user accounts. Users who are created will have automatically approved whitelists")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -223,7 +207,7 @@ class ClockAPI(commands.Cog):
                     return
                 
                 await ctx.response.send_message(embed=Embed(
-                    description = f"Re-linked the Minecraft account `{escape_md(minecraft_username)}` to <@{user.get()['discord']}>'s profile",
+                    description = f"Re-linked the Minecraft account {escape_md(minecraft_username)} to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 
@@ -245,14 +229,7 @@ class ClockAPI(commands.Cog):
                     await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
-                user.user["whitelist"]["status"] = WLStatus.APPROVED.value
-                user.user["whitelist"]["moderator"] = ctx.user.id
-                user.user["whitelist"]["reason"] = None
-                user.user["whitelist"]["reapply_in"] = None
-                user.update()
-                
-                # Puffer.execute_command(f"/whitelist add {minecraft_username}")
-                CWCore.whitelist_add(user.get()['minecraft'])
+                user.whitelist_approve(ctx.user.id)
                 
                 await ctx.response.send_message(embed=Embed(
                     description = f"Created profile for <@{user.get()['discord']}>\nAttached Minecraft Account: `{user.get()['minecraft']}`",

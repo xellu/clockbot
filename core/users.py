@@ -220,3 +220,57 @@ class UserManager:
         if self.user["last_seen"]:
             return UserActionResponse(True, meta=f"<t:{int(self.user['last_seen'])}:R> <t:{int(self.user['last_seen'])}:f>")
         return UserActionResponse(True, meta="Never")
+    
+    def whitelist_approve(self, moderator: int):
+        """Approve the user for whitelisting."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if self.user["whitelist"]["status"] == WLStatus.APPROVED.value:
+            return UserActionResponse(False, "User already approved")
+        
+        self.user["whitelist"]["status"] = WLStatus.APPROVED.value
+        self.user["whitelist"]["moderator"] = moderator
+        self.user["whitelist"]["reason"] = None
+        self.user["whitelist"]["reapply_in"] = None
+        self.update()
+        
+        # Puffer.execute_command(f"/whitelist add {get_mc_username(self.user['minecraft'])}")
+        CWCore.whitelist_add(self.user["minecraft"])
+        
+        return UserActionResponse(True)
+    
+    def whitelist_reject(self, moderator: int, reason: str = None):
+        """Reject the user for whitelisting."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        if self.user["whitelist"]["status"] == WLStatus.REJECTED.value:
+            return UserActionResponse(False, "User already rejected")
+        
+        self.user["whitelist"]["status"] = WLStatus.REJECTED.value
+        self.user["whitelist"]["moderator"] = moderator
+        self.user["whitelist"]["reason"] = reason
+        self.user["whitelist"]["reapply_in"] = time.time() + 7 * 24 * 60 * 60
+        self.update()
+        
+        # Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")
+        CWCore.whitelist_remove(self.user["minecraft"])
+        
+        return UserActionResponse(True)
+    
+    def whitelist_remove(self, moderator: int):
+        """Remove the user from the whitelist."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        self.user["whitelist"]["status"] = WLStatus.INACTIVE.value
+        self.user["whitelist"]["moderator"] = moderator
+        self.user["whitelist"]["reason"] = None
+        self.user["whitelist"]["reapply_in"] = None
+        self.update()
+        
+        # Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")
+        CWCore.whitelist_remove(self.user["minecraft"])
+        
+        return UserActionResponse(True)

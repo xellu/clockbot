@@ -185,6 +185,8 @@ class Whitelist(commands.Cog):
             if user.get()["whitelist"]["status"] == WLStatus.APPROVED.value and self.membership_role not in member.roles: #handle approved users without role
                 await member.add_roles(self.membership_role)
                 await self.announce_whitelist(member, user.get()["whitelist"]["moderator"])
+                
+                user.whitelist_approve(self.bot.user.id)
                 CommandLogger.ok(f"Whitelist: {member.name} is whitelisted")
                 
             if user.get()["whitelist"]["status"] != WLStatus.APPROVED.value and self.membership_role in member.roles: #handle rejected users with role
@@ -330,26 +332,20 @@ class Whitelist(commands.Cog):
                     return
                 
                 if interaction.data.get("custom_id") == "ok-reject":
-                    user.user["whitelist"]["status"] = WLStatus.REJECTED.value
-                    user.user["whitelist"]["moderator"] = interaction.user.id
-                    user.user["whitelist"]["reapply_in"] = time.time() + 604800
-                    user.user["whitelist"]["reason"] = interaction.data.get("values")[0]
-                    user.update()
+                    reason = interaction.data.get("values")[0]
+                    
+                    user.whitelist_reject(interaction.user.id, reason)
                     
                     await interaction.followup.send(embed=Embed(
                         description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for:\n> `{interaction.data.get('values')[0]}`",
                         color = Colors.OK
                     ), ephemeral=True)
                     await msg.delete()
-                    await self.announce_reject(user, interaction.data.get("values")[0])
+                    await self.announce_reject(user, reason)
                     
                     return
                 
-                user.user["whitelist"]["status"] = WLStatus.APPROVED.value
-                user.user["whitelist"]["moderator"] = interaction.user.id
-                user.user["whitelist"]["reapply_in"] = None
-                user.user["whitelist"]["reason"] = None
-                user.update()
+                user.whitelist_approve(interaction.user.id)
                 
                 await interaction.followup.send(embed=Embed(
                     description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was whitelisted",
