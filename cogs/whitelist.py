@@ -181,7 +181,9 @@ class Whitelist(commands.Cog):
                 DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
                 continue
             
-            if user.is_valid() and user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < user.get()["whitelist"]["reapply_in"]:
+            reapply_in = user.get()["whitelist"].get("reapply_in")
+            if not reapply_in: reapply_in = 0
+            if user.is_valid() and user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < reapply_in:
                 CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} is not allowed to reapply")
                 DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
                 continue
@@ -339,7 +341,7 @@ class Whitelist(commands.Cog):
         if not self.announce_channel: return
         
         embed = Embed(
-            description = f"🚫 {escape_md(get_mc_username(user.get()['minecraft']))} (<@{user.get()['discord']}>) was rejected for `{reason}`, you can reapply <t:{int(user.user['whitelist']['reapply_in'])}:R>",
+            description = f"🚫 {escape_md(get_mc_username(user.get()['minecraft']))} (<@{user.get()['discord']}>) was rejected for `{reason}`, you can reapply <t:{int(user.user['whitelist']['reapply_in'] or 0)}:R>",
             color = Colors.ERROR
         )
         await self.announce_channel.send(f"<@{user.get()['discord']}>", embed=embed)
@@ -412,8 +414,8 @@ class Whitelist(commands.Cog):
                         ), ephemeral=True)
                         return
                     
-                    await self.announce_reject(user, reasonData.get("reason", "No reason provided"))
                     user.whitelist_reject(interaction.user.id, reason, reasonData.get("reapply_in", 0))
+                    await self.announce_reject(user, reasonData.get("reason", "No reason provided"))
                     
                     await interaction.followup.send(embed=Embed(
                         description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for `{reasonData.get('reason')}`\n> `{reasonData.get('description', 'No description provided')}`",
