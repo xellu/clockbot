@@ -240,7 +240,7 @@ class UserManager:
         
         return UserActionResponse(True)
     
-    def whitelist_reject(self, moderator: int, reason: str = None):
+    def whitelist_reject(self, moderator: int, reason: str = None, reapply_in: int = 0):
         """Reject the user for whitelisting."""
         if not self.is_valid():
             return UserActionResponse(False, "User not found")
@@ -251,7 +251,7 @@ class UserManager:
         self.user["whitelist"]["status"] = WLStatus.REJECTED.value
         self.user["whitelist"]["moderator"] = moderator
         self.user["whitelist"]["reason"] = reason
-        self.user["whitelist"]["reapply_in"] = time.time() + 7 * 24 * 60 * 60
+        self.user["whitelist"]["reapply_in"] = time.time() + reapply_in
         self.update()
         
         # Puffer.execute_command(f"/whitelist remove {get_mc_username(self.user['minecraft'])}")

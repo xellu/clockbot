@@ -6,7 +6,7 @@ import time
 
 from mdbb import Config, Bot, Colors, CommandLogger, DB
 
-from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate, WLKeyNames
+from core.templates.UserTemplate import UserTemplate, WLStatus, ActionTemplate, WLKeyNames, WLDenyReasons
 from core.utils import get_mc_username, get_mc_uuid, random_str, escape_md
 from core.users import UserManager
 
@@ -216,10 +216,8 @@ class Whitelist(commands.Cog):
             view.add_item(discord.ui.Button(label="Approve", style=discord.ButtonStyle.success, custom_id="ok"))
             
             select = discord.ui.Select(placeholder="Reject for", custom_id="ok-reject")
-            select.add_option(label="Underage", value="Underage")
-            select.add_option(label="Inappropriate content", value="Inappropriate content")
-            select.add_option(label="Not enough information", value="Not enough information")
-            select.add_option(label="Other", value="Other")
+            for k,v in WLDenyReasons.items():
+                select.add_option(label=v.get("reason"), value=k)
             
             view.add_item(select)
             
@@ -406,12 +404,19 @@ class Whitelist(commands.Cog):
                 
                 if interaction.data.get("custom_id") == "ok-reject":
                     reason = interaction.data.get("values")[0]
+                    reasonData = WLDenyReasons.get(reason)
+                    if not reasonData:
+                        await interaction.followup.send(embed=Embed(
+                            description = "🚫 Invalid reason",
+                            color = Colors.ERROR
+                        ), ephemeral=True)
+                        return
                     
-                    await self.announce_reject(user, reason)
-                    user.whitelist_reject(interaction.user.id, reason)
+                    await self.announce_reject(user, reasonData.get("reason", "No reason provided"))
+                    user.whitelist_reject(interaction.user.id, reason, reasonData.get("reapply_in", 0))
                     
                     await interaction.followup.send(embed=Embed(
-                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for:\n> `{interaction.data.get('values')[0]}`",
+                        description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected for `{reasonData.get('reason')}`\n> `{reasonData.get('description', 'No description provided')}`",
                         color = Colors.OK
                     ))
                     await msg.delete()
