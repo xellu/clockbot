@@ -416,8 +416,8 @@ class Whitelist(commands.Cog):
                         ), ephemeral=True)
                         return
                     
-                    user.whitelist_reject(interaction.user.id, reasonData.get("description"), reasonData.get("reapply_in", 0))
-                    await self.announce_reject(user, reasonData.get("reason", "No reason provided"))
+                    user.whitelist_reject(interaction.user.id, reasonData.get("reapply_in", 0))
+                    await self.announce_reject(user, reasonData.get("description", "No reason provided"))
                     
                     await interaction.followup.send(embed=Embed(
                         description = f"✅ {escape_md(get_mc_username(user.get()['minecraft']))} was rejected\n> `{reasonData.get('reason')}`",
