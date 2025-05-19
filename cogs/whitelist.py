@@ -181,12 +181,14 @@ class Whitelist(commands.Cog):
                 DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
                 continue
             
-            reapply_in = user.get()["whitelist"].get("reapply_in")
-            if not reapply_in: reapply_in = 0
-            if user.is_valid() and user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < reapply_in:
-                CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} is not allowed to reapply")
-                DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
-                continue
+            if user.is_valid():
+                reapply_in = user.get()["whitelist"].get("reapply_in")
+                if not reapply_in: reapply_in = 0
+                
+                if user.get()["whitelist"]["status"] == WLStatus.REJECTED.value and time.time() < reapply_in:
+                    CommandLogger.error(f"Whitelist: User {user.get()['minecraft']} is not allowed to reapply")
+                    DB.get("clockbot").whitelist.delete_one({"_id": app["_id"]})
+                    continue
             
             if not user.is_valid():
                 user.create(
