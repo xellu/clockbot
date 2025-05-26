@@ -26,6 +26,7 @@ ConfigTemplate = {
     #Status module settings
     "STATUS.TARGET.IP": "troll.ink", #ip or domain of the server to be monitored
     "STATUS.STATE.CHANNEL": 0, #channel id for a display channel for the server status
+    "STATUS.TPS.CHANNEL": 0, #channel id for a display channel for the server tps
     "STATUS.ANNOUNCE.CHANNEL": 0, #channel id for maintenance announcements
     
     #ChatLink module settings

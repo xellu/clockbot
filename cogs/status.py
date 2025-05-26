@@ -41,17 +41,23 @@ class Status(commands.Cog):
         
             
     async def set_channel_status(self, state):
-        channel = await self.bot.fetch_channel(Config.get("STATUS.STATE.CHANNEL"))
+        state_channel = await self.bot.fetch_channel(Config.get("STATUS.STATE.CHANNEL"))
+        tps_channel = await self.bot.fetch_channel(Config.get("STATUS.TPS.CHANNEL"))
+        
             
         match state:
             case State.ONLINE:
-                await channel.edit(name=f"{'🔥' if CWCore.status['online']['count'] >= 10 else '🟢'} Online: {CWCore.status['online']['count']}")
+                await state_channel.edit(name=f"{'🔥' if CWCore.status['online']['count'] >= 10 else '🟢'} Online: {CWCore.status['online']['count']}")
+                await tps_channel.edit(name=f"{'🥳' if CWCore.status['tps'] >= 10 else '😰'} TPS: {CWCore.status['tps']:.1f}")
             case State.OFFLINE:
-                await channel.edit(name=f"⛔ Server Offline")
+                await state_channel.edit(name=f"⛔ Server Offline")
+                await tps_channel.edit(name=f"❓ TPS: N/A")
             case State.MAINTENANCE:
-                await channel.edit(name=f"🔄️ Maintenance")
+                await state_channel.edit(name=f"🔄️ Maintenance")
+                await tps_channel.edit(name=f"❓ TPS: N/A")
             case State.NETWORK_ERROR:
-                await channel.edit(name=f"❓ API Error")
+                await state_channel.edit(name=f"❓ API Error")
+                await tps_channel.edit(name=f"❓ TPS: N/A")
         
         if state != self.last_state:
             CommandLogger.ok(f"Status: updated server status to {state.name} ({CWCore.status['online']['count']}/{CWCore.status['online']['max']})")        
