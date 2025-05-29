@@ -320,7 +320,7 @@ class Whitelist(commands.Cog):
         if not reason:
             reason = "No reason provided"
         
-        if user.get()["whitelist"]["status"] == WLStatus.APPROVED.value:
+        if user["whitelist"]["status"] == WLStatus.APPROVED.value:
             embed = Embed(
                 description = f"🚫 {escape_md(get_mc_username(user['minecraft']))} (<@{user['discord']}>) was removed from the whitelist:\n> `{reason}`",
                 color = Colors.ERROR
