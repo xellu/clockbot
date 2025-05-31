@@ -65,7 +65,7 @@ class ChatLink(commands.Cog):
                     buffer = []
                 await self.channel.send(embed=msg.embed)
             else:
-                buffer.append(msg.content.replace("@everyone", "@\u200beveryone").replace("@here", "@\u200bhere"))
+                buffer.append(msg.content.replace("@", "@\u200b"))
                 
         self.queue.clear()
                 
