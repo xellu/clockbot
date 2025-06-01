@@ -5,6 +5,7 @@ from core import DB
 from plugins.cwcore import CWCore
 
 from core.users import UserManager
+from core.utils import get_mc_username
 from core.templates.UserTemplate import WLStatus
 
 import json
@@ -15,7 +16,8 @@ wl_changes = {
 }
 
 @Shell.command("wlsync", "Syncs the whitelist database with the server", "wlsync")
-def wl_sync(ctx):    
+def wl_sync(ctx):
+    logger.info("Running whitelist synchronization...")
     server_wl = json.loads(open("whitelist.json", "r", encoding="utf-8").read()) #{name: str, uuid: str}
     db_wl = DB.get("clockbot").users.find({"whitelist.status": WLStatus.APPROVED.value}) #user template objects
     
@@ -23,26 +25,35 @@ def wl_sync(ctx):
     for u in server_wl:
         user = UserManager(minecraft=u["uuid"])
         if not user.is_valid():
-            wl_changes["removed"].append(u["uuid"])
+            wl_changes["removed"].append({
+                "uuid": u["uuid"],
+                "name": get_mc_username(u["uuid"])
+            })
             continue
        
         if user.get()["whitelist"]["status"] != WLStatus.APPROVED.value:
-            wl_changes["added"].append(u["uuid"])
+            wl_changes["added"].append({
+                "uuid": u["uuid"],
+                "name": get_mc_username(u["uuid"])
+            })
 
     #process database whitelist
     server_wl_uuids = [u["uuid"] for u in server_wl]
     for user in db_wl:
         if user["minecraft"] not in server_wl_uuids and user["whitelist"]["status"] == WLStatus.APPROVED.value:
-            wl_changes["added"].append(user["minecraft"])
+            wl_changes["added"].append({
+                "uuid": user["minecraft"],
+                "name": get_mc_username(user["minecraft"])
+            })
     
     #display changes
     logger.info("Preview of whitelist changes:")
     logger.ok(f"[+] {len(wl_changes['added'])} users will be added to the whitelist")
     logger.error(f"[-] {len(wl_changes['removed'])} users will be removed from the whitelist")
     for u in wl_changes["added"]:
-        logger.ok(f"+ {u}")
+        logger.ok(f"+ {u['name']} ({u['uuid']})")
     for u in wl_changes["removed"]:
-        logger.error(f"- {u}")
+        logger.error(f"- {u['name']} ({u['uuid']})")
         
     if len(wl_changes["added"]) == 0 and len(wl_changes["removed"]) == 0:
         logger.info("No changes to the whitelist were detected")
@@ -56,13 +67,13 @@ def wl_apply(ctx):
         return CommandResponse("No changes to apply, please run 'wlsync' first")
     
     #apply changes
-    for uuid in wl_changes["added"]:
-        CWCore.whitelist_add(uuid)
-        logger.ok(f"Added {uuid} to the whitelist")
+    for u in wl_changes["added"]:
+        CWCore.whitelist_add(u['uuid'])
+        logger.ok(f"Added {u['name']} to the whitelist")
     
-    for uuid in wl_changes["removed"]:
-        CWCore.whitelist_remove(uuid)
-        logger.error(f"Removed {uuid} from the whitelist")
+    for u in wl_changes["removed"]:
+        CWCore.whitelist_remove(u['uuid'])
+        logger.error(f"Removed {u['name']} from the whitelist")
     
     #clear changes
     wl_changes["added"].clear()
