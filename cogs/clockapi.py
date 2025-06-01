@@ -23,38 +23,6 @@ class AccountManagerActions(Enum):
 class ClockAPI(commands.Cog):
     def __init__(self):
         self.bot = Bot
-
-    #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
-    @app_commands.command(name="migrate", description="Add your Minecraft and Discord accounts to ClockAPI")
-    @app_commands.describe(code="The code you received")
-    async def migrate_to_clockapi(self, ctx, code: str):
-        await ctx.response.defer(ephemeral=True)
-        
-        user = UserManager(discord=ctx.user.id)
-        if user.is_valid() and user.get()["minecraft"]:
-            await ctx.followup.send(embed=Embed(description="You already have a ClockAPI profile", color=Colors.ERROR), ephemeral=True)
-            return
-        
-        code = DB.get("clockbot").codes.find_one({"code": code})
-        if code is None:
-            await ctx.followup.send(embed=Embed(description="Invalid code.", color=Colors.ERROR), ephemeral=True)
-            return
-        
-        r = user.create(minecraft=get_mc_username(code["uuid"]))
-        if not r.ok:
-            await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
-            return
-        
-        user.whitelist_approve(self.bot.user.id)
-        
-        DB.get("clockbot").codes.delete_one({"code": code["code"]})
-        
-        await ctx.followup.send(embed=Embed(
-            title = "Thank you for migrating!",
-            description = f"We've created your ClockAPI profile!",
-            color = Colors.OK
-        ), ephemeral=True)
-    #--------------------------------------------------------------------------------------
         
     @app_commands.command(name="profile", description="View your ClockAPI profile")
     async def profile(self, ctx):

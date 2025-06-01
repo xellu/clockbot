@@ -84,8 +84,8 @@ class ChatLink(commands.Cog):
         
         cwm = CWChatMessage(
             message_id = msg.id,
-            author = msg.author.display_name,
-            content = msg.content,
+            author = self.minecraft_username(msg.author),
+            content = msg.content.replace("**", ""),
             attachments = [attachment.url for attachment in msg.attachments],
         )
         if msg.reference:
@@ -93,11 +93,28 @@ class ChatLink(commands.Cog):
             if ref:
                 cwm.add_reply(
                     message_id = ref.id,
-                    author = ref.author.display_name,
+                    author = self.minecraft_username(ref.author),
                     content = ref.content
                 )
                 
         CWCore.chat_passthrough(cwm)
+        
+    def minecraft_username(self, author):
+        user = UserManager(discord=author.id)
+        if user.is_valid():
+            return get_mc_username(user.get()['minecraft'])
+        return f"{author.display_name}⚠"
+        
+    def discord_username(self, author):
+        user = UserManager(minecraft=author['uuid'])
+        if user.is_valid():
+            _id = user.get()['discord']
+            username = self.bot.get_user(_id).display_name
+            if not username:
+                return f"{author['name']}❓"
+            return username
+        
+        return f"{author['name']}⚠️"
         
     def cmd_seen(self, *args):
         if not args: return "No player specified"
@@ -147,6 +164,8 @@ class ChatLink(commands.Cog):
         if not self.channel: return
         if not Config.get("MODULES.CHATLINK"): return
         
+        user = self.discord_username(data['author'])
+        
         waypoint = WP_REGEX.match(data['content'])
         if waypoint:
             name, initial, x, y, z, color_id, disabled, type_id, dimension_id = waypoint.groups()
@@ -156,7 +175,7 @@ class ChatLink(commands.Cog):
             
             self.queue.append(CLMessage(embed=Embed(
                 title = f"[{initial}] {name}",
-                description = f"**{escape_md(data['author']['name'])}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
+                description = f"**{user}** has shared a waypoint at `{x}, {y}, {z}` in The {dimension}",
                 color = Colors.DEFAULT
             )))
             return
@@ -177,7 +196,7 @@ class ChatLink(commands.Cog):
                 
             if r != None: return 
         
-        self.queue.append(CLMessage(f"**{escape_md(data['author']['name'])}:** {data['content']}"))
+        self.queue.append(CLMessage(f"**{user}:** {data['content']}"))
         
     def on_player_join(self, data):
         """
@@ -187,7 +206,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{escape_md(data['name'])}** has joined",
+            description = f"**{self.discord_username(data)}** has joined",
             color = Colors.OK
         )))
         
@@ -204,7 +223,7 @@ class ChatLink(commands.Cog):
         if not Config.get("MODULES.CHATLINK"): return
         
         self.queue.append(CLMessage(embed=Embed(
-            description = f"**{escape_md(data['name'])}** has left",
+            description = f"**{self.discord_username(data)}** has left",
             color = Colors.ERROR
         )))
         

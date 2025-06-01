@@ -131,7 +131,6 @@ class Whitelist(commands.Cog):
         
         await interaction.followup.send(embed=embed, ephemeral=True)
     
-    #TEMPORARY CODE / USED FOR MIGRATION ONLY--------------------------------------        
     def on_player_join(self, data): #send migration notice to the player
         if not self.enabled: return
         
@@ -140,24 +139,7 @@ class Whitelist(commands.Cog):
         if user.is_valid():
             return
         
-        if DB.get("clockbot").codes.find_one({"uuid": data["uuid"]}):
-            code = DB.get("clockbot").codes.find_one({"uuid": data["uuid"]})["code"]
-        else:
-            code = random_str(5)
-            DB.get("clockbot").codes.insert_one({
-                "uuid": data["uuid"],
-                "code": code
-            })
-        
-        # if data["name"] != "Xelluu": return
-        
-        CWCore.send_migration_notice(
-            uuid = data["uuid"],
-            username = data["name"],
-            code = code
-        )
-        CommandLogger.info(f"Unregistered player {data['name']} joined, sending migration notice")
-    #-----------------------------------------------------------------------
+        CommandLogger.warn(f"Unregistered player {data['name']} joined")
         
     # get new whitelist applications
     @tasks.loop(seconds=60)
