@@ -79,7 +79,7 @@ class ShellManager:
         return cmd["function"](self, *data["args"], **data["flags"])
 
     def run_loop(self):
-        from . import builtins
+        from . import (builtins, whitelists)
 
         while True:
             try: #detect ctrl+c
