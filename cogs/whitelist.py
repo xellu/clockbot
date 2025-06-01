@@ -229,9 +229,9 @@ class Whitelist(commands.Cog):
             
             user = UserManager(discord=member.id)
             if not user.is_valid() and self.membership_role in member.roles: #handle users without a ClockAPI account
-                # await member.remove_roles(self.membership_role)
+                await member.remove_roles(self.membership_role)
                 # await self.announce_delist(member, "No associated ClockAPI account found")
-                # CommandLogger.error(f"Whitelist: {member.name} does not have a profile")
+                CommandLogger.error(f"Whitelist: {member.name} does not have a profile")
                 #disabled for now, waiting for migration to end
                 continue
             

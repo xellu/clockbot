@@ -128,7 +128,7 @@ class Status(commands.Cog):
     @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")
     @app_commands.allowed_contexts(guilds=True, private_channels=True)
     @app_commands.checks.cooldown(1, 10, key=lambda i: (i.guild.id if i.guild else i.user.id))
-    async def tps_command(self, ctx):
+    async def tps_command(self, ctx):        
         if not Config.get("MODULES.STATUS"):
             await ctx.response.send_message(embed=Embed(
                 title = "Server Status",

@@ -59,6 +59,8 @@ class ClockAPI(commands.Cog):
             await ctx.response.send_message(embed=Embed(description="Please provide either a Discord ID or a Minecraft username.", color=Colors.ERROR), ephemeral=True)
             return
         
+        await ctx.response.defer(ephemeral=True)
+        
         user = None
         if discord:
             user = UserManager(discord=discord.id)
@@ -66,13 +68,13 @@ class ClockAPI(commands.Cog):
             user = UserManager(minecraft=get_mc_uuid(minecraft))
             
         if not user.is_valid():
-            await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
+            await ctx.followup.send(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
             return
         
         mc_username = get_mc_username(user.get()["minecraft"])
         seen = user.get_seen(md=True)
         if not seen.ok:
-            await ctx.response.send_message(embed=Embed(description=seen.error, color=Colors.ERROR), ephemeral=True)
+            await ctx.followup.send(embed=Embed(description=seen.error, color=Colors.ERROR), ephemeral=True)
             return
 
         last_seen = seen.meta        
@@ -94,6 +96,8 @@ class ClockAPI(commands.Cog):
             await ctx.response.send_message(embed=Embed(description="Please provide either a Discord ID or a Minecraft username.", color=Colors.ERROR), ephemeral=True)
             return
         
+        await ctx.response.defer(ephemeral=True)
+        
         user = None
         if discord:
             user = UserManager(discord=discord.id)
@@ -104,7 +108,7 @@ class ClockAPI(commands.Cog):
             await ctx.response.send_message(embed=Embed(description="User does not have a ClockAPI profile.", color=Colors.ERROR), ephemeral=True)
             return
         
-        await ctx.response.send_message(embed=Embed(
+        await ctx.followup.send(embed=Embed(
             title = f"Lookup",
             description  = f"""
 **Minecraft:** {escape_md(get_mc_username(user.get()["minecraft"]))} `{user.get()['minecraft']}`
@@ -131,6 +135,7 @@ class ClockAPI(commands.Cog):
         action: AccountManagerActions,
         minecraft_username: str = None,
     ):
+        await ctx.response.defer(ephemeral=True)
         
         user = UserManager(discord=user.id)
         if minecraft_username and action == AccountManagerActions.Delete:
@@ -141,40 +146,40 @@ class ClockAPI(commands.Cog):
                 uuid = user.get()['minecraft'] if user.is_valid() else None
                 r = user.unlink()
                 if not r.ok:
-                    await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
-                await ctx.response.send_message(embed=Embed(
+                await ctx.followup.send(embed=Embed(
                     description = f"Unlinked the `{uuid}` Minecraft account from <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
             
             case AccountManagerActions.Link:
                 if not minecraft_username:
-                    await ctx.response.send_message(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
                     return
                 
                 r = user.link(minecraft_username)
                 if not r.ok:
-                    await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
-                await ctx.response.send_message(embed=Embed(
+                await ctx.followup.send(embed=Embed(
                     description = f"Linked a Minecraft account {escape_md(minecraft_username)} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
                 
             case AccountManagerActions.Relink:
                 if not minecraft_username:
-                    await ctx.response.send_message(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
                     return
                 
                 r = user.relink(minecraft_username)
                 if not r.ok:
-                    await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
-                await ctx.response.send_message(embed=Embed(
+                await ctx.followup.send(embed=Embed(
                     description = f"Re-linked the Minecraft account {escape_md(minecraft_username)} to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
                 ), ephemeral=True)
@@ -183,10 +188,10 @@ class ClockAPI(commands.Cog):
                 user_id = user.get()['discord']
                 r = user.delete()
                 if not r.ok:
-                    await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
-                await ctx.response.send_message(embed=Embed(
+                await ctx.followup.send(embed=Embed(
                     description = f"Deleted profile for <@{user_id}>",
                     color = Colors.OK
                 ), ephemeral=True)
@@ -194,12 +199,12 @@ class ClockAPI(commands.Cog):
             case AccountManagerActions.Create:                
                 r = user.create(minecraft=minecraft_username)
                 if not r.ok:
-                    await ctx.response.send_message(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
                     return
                 
                 user.whitelist_approve(ctx.user.id)
                 
-                await ctx.response.send_message(embed=Embed(
+                await ctx.followup.send(embed=Embed(
                     description = f"Created profile for <@{user.get()['discord']}>\nAttached Minecraft Account: `{user.get()['minecraft']}`",
                     color = Colors.OK
                 ), ephemeral=True)
