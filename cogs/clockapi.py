@@ -83,7 +83,7 @@ class ClockAPI(commands.Cog):
         elif seen.meta == "Online":
             last_seen = f"{escape_md(mc_username)} is currently online"
             
-        await ctx.response.send_message(embed=Embed(
+        await ctx.followup.send(embed=Embed(
             title = "Last Seen",
             description = last_seen,
             color = Colors.DEFAULT
