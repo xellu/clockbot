@@ -22,7 +22,7 @@ WLDenyReasons = {
     "no_info": {
         "reason": "Not enough information",
         "description": "Please provide more information in your application.",
-        "reapply_in": 60 * 60 * 3, #3 hours
+        "reapply_in": 60 * 60 * 0.5, #30 mins
     },
     "nsfw_content": {
         "reason": "Inappropriate content",
@@ -48,6 +48,11 @@ WLDenyReasons = {
         "reason": "Other (30 Days)",
         "description": "Please contact a staff member for more information.",
         "reapply_in": 60 * 60 * 24 * 30, #30 days
+    },
+    "other_1y": {
+        "reason": "Other (1 Year)",
+        "description": "Please contact a staff member for more information.",
+        "reapply_in": 60 * 60 * 24 * 365, #1 year
     },
     "other_inf": {
         "reason": "Other (Inf)",
