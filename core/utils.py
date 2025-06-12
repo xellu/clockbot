@@ -13,11 +13,18 @@ def get_mc_uuid(username):
         return None
     
     try:
-        r = requests.get(f"https://mcprofile.io/api/v1/java/username/{username}")
+        #DEPRECATED API
+        # r = requests.get(f"https://mcprofile.io/api/v1/java/username/{username}")
+        # r.raise_for_status()
+        # data = r.json()
+            
+        # return data.get("uuid")
+
+        r = requests.get(f"https://playerdb.co/api/player/minecraft/{username}")
         r.raise_for_status()
         data = r.json()
         
-        return data.get("uuid")
+        return data.get("id")
     except requests.RequestException as e:
         logger.error(f"Error fetching UUID for {username}: {e}")
         return None
@@ -28,7 +35,9 @@ def get_mc_username(uuid):
         return None
     
     try:
-        r = requests.get(f"https://mcprofile.io/api/v1/java/uuid/{uuid}")
+        #DEPRECATED API
+        # r = requests.get(f"https://mcprofile.io/api/v1/java/uuid/{uuid}")
+        r = requests.get(f"https://playerdb.co/api/player/minecraft/{uuid}")
         r.raise_for_status()
         data = r.json()
         
