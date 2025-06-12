@@ -24,7 +24,7 @@ def get_mc_uuid(username):
         r.raise_for_status()
         data = r.json()
         
-        return data.get("id")
+        return data.get("data", {}).get("player", {}).get("id")
     except requests.RequestException as e:
         logger.error(f"Error fetching UUID for {username}: {e}")
         return None
@@ -41,7 +41,7 @@ def get_mc_username(uuid):
         r.raise_for_status()
         data = r.json()
         
-        return data.get("username")
+        return data.get("data", {}).get("player", {}).get("username")
     except requests.RequestException as e:
         logger.error(f"Error fetching username for {uuid}: {e}")
         return None
