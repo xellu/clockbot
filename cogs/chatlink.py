@@ -100,21 +100,23 @@ class ChatLink(commands.Cog):
         CWCore.chat_passthrough(cwm)
         
     def minecraft_username(self, author):
-        user = UserManager(discord=author.id)
-        if user.is_valid():
-            return get_mc_username(user.get()['minecraft'])
-        return f"{author.display_name}⚠"
+        # user = UserManager(discord=author.id)
+        # if user.is_valid():
+        #     return get_mc_username(user.get()['minecraft'])
+        # return f"{author.display_name}⚠"
+        return f"{author.display_name}"
         
     def discord_username(self, author):
-        user = UserManager(minecraft=author['uuid'])
-        if user.is_valid():
-            _id = user.get()['discord']
-            username = self.bot.get_user(_id).display_name
-            if not username:
-                return f"{author['name']}❓"
-            return username
+        # user = UserManager(minecraft=author['uuid'])
+        # if user.is_valid():
+        #     _id = user.get()['discord']
+        #     username = self.bot.get_user(_id).display_name
+        #     if not username:
+        #         return f"{author['name']}❓"
+        #     return username
         
-        return f"{author['name']}⚠️"
+        # return f"{author['name']}⚠️"
+        return author['name']
         
     def cmd_seen(self, *args):
         if not args: return "No player specified"
