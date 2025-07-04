@@ -177,6 +177,9 @@ class Whitelist(commands.Cog):
                     discord = app["discord"],
                     minecraft = username
                 )
+                if not user.is_valid():
+                    CommandLogger.error(f"Whitelist: Failed to create user {username}")
+                    continue
                 
                 user.user["whitelist"]["status"] = WLStatus.PENDING.value
                 user.user["whitelist"]["moderator"] = None
