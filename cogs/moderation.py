@@ -137,7 +137,7 @@ class Moderation(commands.Cog):
             "expires_at": {"$gt": time.time()}
         })
         
-        if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.KICK"):
+        if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.KICK") <= Config.get("AUTOMOD.WARNINGS.BAN"):
             await self.process_kick(user, f"Exceeded warning limit ({Config.get('AUTOMOD.WARNINGS.KICK')})", moderator)
         
         if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.BAN"):
