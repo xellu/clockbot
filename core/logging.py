@@ -49,7 +49,7 @@ class LoggingManager:
         self.path = path_override if path_override else path
 
         if not os.path.exists(self.path):
-            with open(self.path, 'x') as f: f.write("")
+            with open(self.path, 'x', encoding='utf-8') as f: f.write("")
 
         self.config = None
 
@@ -106,7 +106,7 @@ class LoggingManager:
 
         print(f"{Fore.LIGHTBLACK_EX}[{content['timestamp']['formatted']}] {Colors.get(severity, Fore.CYAN)}[{source.upper()}] {Fore.RESET}{content['message']}")
 
-        with open(self.path, 'a') as f:
+        with open(self.path, 'a', encoding='utf-8') as f:
             f.write("\n" + raw)
 
     def debug(self, message: str):

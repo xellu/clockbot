@@ -274,3 +274,19 @@ class UserManager:
         CWCore.whitelist_remove(self.user["minecraft"])
         
         return UserActionResponse(True)
+    
+    def is_banned(self):
+        """Check if the user is banned."""
+        if not self.is_valid():
+            return UserActionResponse(False, "User not found")
+        
+        bans = DB.get("clockbot").mod.find({
+            "user": self.user["discord"],
+            "type": "ban"
+        })
+        
+        for b in bans:
+            if b["expires_at"] is None or b["expires_at"] > time.time():
+                return UserActionResponse(True, meta=b)
+        
+        return UserActionResponse(False, "User is not banned")

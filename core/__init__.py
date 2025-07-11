@@ -15,6 +15,8 @@ Release = "1.0.0"
 logger = LoggingManager("Core.Main")
 logger.info(f"Running {Config.get('SERVER.NAME')}~{Release}")
 
+WORD_BLACKLIST = open(f"word_blacklist.txt", "r").read().splitlines()
+
 DB = DatabaseService(Config)
 DB.start()
 

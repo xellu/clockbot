@@ -3,3 +3,4 @@ colorama
 pymongo[srv]
 pycryptodomex
 requests
+cachetools

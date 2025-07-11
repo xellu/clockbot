@@ -5,6 +5,7 @@ import time
 import re
 
 from mdbb import Bot, Config, CommandLogger, Colors, DB
+from core import WORD_BLACKLIST
 from core.utils import get_mc_username, get_mc_uuid, random_str, parse_time, escape_md
 from core.users import UserManager
 
@@ -57,20 +58,18 @@ class ChatLink(commands.Cog):
         
     @tasks.loop(seconds=1)
     async def queue_loop(self):
-        buffer = []
         for msg in self.queue:            
             if msg.embed:
-                if buffer:
-                    await self.channel.send("\n".join(buffer))
-                    buffer = []
                 await self.channel.send(embed=msg.embed)
-            else:
-                buffer.append(msg.content.replace("@", "@\u200b"))
+                continue
+            
+            for word in msg.content.split(" "):
+                if word.lower() in WORD_BLACKLIST:
+                    msg.content = msg.content.replace(word, "❤️"*len(word))
+            
+            await self.channel.send(msg.content.replace("@", "@\u200b"))
                 
         self.queue.clear()
-                
-        if not buffer: return
-        await self.channel.send("\n".join(buffer))
         
     @commands.Cog.listener()
     async def on_message(self, msg):

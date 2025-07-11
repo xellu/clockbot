@@ -25,6 +25,7 @@ class CWPackets:
     PLAYER_LEAVE = 5
     WL_ADD = 6
     WL_REMOVE = 7
+    KICK = 69
     
     MIGRATION_NOTICE = 777
 
@@ -294,12 +295,26 @@ class ClockworkCoreAdapter:
         )
         
     def send_migration_notice(self, uuid, username, code) -> None:
+        """
+        Send a migration notice to the Clockwork Core API.
+        """
         self.send(
             packetId = CWPackets.MIGRATION_NOTICE,
             data = {
                 "uuid": uuid,
                 "username": username,
                 "code": code
+            }
+        )
+        
+    def kick_player(self, username: str, reason: str) -> None:
+        """
+        Kick a player from the server.
+        """
+        self.send(
+            packetId = CWPackets.KICK,
+            data = {
+                "username": username,
             }
         )
         

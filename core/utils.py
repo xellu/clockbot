@@ -2,11 +2,16 @@ import hashlib
 import random
 import string
 import requests
+from cachetools import TTLCache, cached
 
 from .logging import LoggingManager
 
 logger = LoggingManager("Core.Utils")
 
+# Create a TTL cache that expires entries after 1 hour (3600 seconds)
+mc_cache = TTLCache(maxsize=128, ttl=3600)
+
+@cached(cache=mc_cache)
 def get_mc_uuid(username):
     """Get the UUID of a Minecraft account by username"""
     if not username:
@@ -29,6 +34,7 @@ def get_mc_uuid(username):
         logger.error(f"Error fetching UUID for {username}: {e}")
         return None
     
+@cached(cache=mc_cache)
 def get_mc_username(uuid):
     """Get the username of a Minecraft account by UUID"""
     if not uuid:

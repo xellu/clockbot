@@ -22,6 +22,7 @@ ConfigTemplate = {
     "MODULES.STATUS": True,
     "MODULES.CHATLINK": True,
     "MODULES.WHITELIST": True,
+    "MODULES.AUTOMOD": True, #automod module, checks for blacklisted words in chat messages
     
     #Status module settings
     "STATUS.TARGET.IP": "troll.ink", #ip or domain of the server to be monitored
@@ -37,4 +38,11 @@ ConfigTemplate = {
     "WHITELIST.MEMBERSHIP.ROLE": 0, #id of a role to be given to members who are whitelisted
     "WHITELIST.ANNOUNCE.CHANNEL": 0, #id of a channel where whitelist/de-list messages will be sent
     "WHITELIST.ADMIN.CHANNEL": 0, #id of a channel where whitelist applications, and delist suggestions will be sent
+    
+    "AUTOMOD.WARNINGS.KICK": 3, #maximum number of warnings before a user is kicked
+    "AUTOMOD.WARNINGS.BAN": 5, #maximum number of warnings before a user is banned
+    "AUTOMOD.WARNINGS.EXPIRE": 60 * 60 * 24 * 3, #time in seconds after which warnings expire (default: 3 days)
+    "AUTOMOD.BAN.EXPIRE": 60 * 60 * 12, #time in seconds after which a ban expires (default: 12 hours) 
+    "AUTOMOD.IGNORE": [], #list of role ids to ignore in automod checks 
+    "AUTOMOD.ANNOUNCE.CHANNEL": 0, #channel id for automod announcements
 }

@@ -135,7 +135,7 @@ class ClockAPI(commands.Cog):
         action: AccountManagerActions,
         minecraft_username: str = None,
     ):
-        await ctx.response.defer(ephemeral=True)
+        await ctx.response.defer(ephemeral=False)
         
         user = UserManager(discord=user.id)
         if minecraft_username and action == AccountManagerActions.Delete:
@@ -146,60 +146,60 @@ class ClockAPI(commands.Cog):
                 uuid = user.get()['minecraft'] if user.is_valid() else None
                 r = user.unlink()
                 if not r.ok:
-                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR))
                     return
                 
                 await ctx.followup.send(embed=Embed(
                     description = f"Unlinked the `{uuid}` Minecraft account from <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
             
             case AccountManagerActions.Link:
                 if not minecraft_username:
-                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR))
                     return
                 
                 r = user.link(minecraft_username)
                 if not r.ok:
-                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR))
                     return
                 
                 await ctx.followup.send(embed=Embed(
                     description = f"Linked a Minecraft account {escape_md(minecraft_username)} `{user.get()['minecraft']}` to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
                 
             case AccountManagerActions.Relink:
                 if not minecraft_username:
-                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description="Please provide a Minecraft username.", color=Colors.ERROR))
                     return
                 
                 r = user.relink(minecraft_username)
                 if not r.ok:
-                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR))
                     return
                 
                 await ctx.followup.send(embed=Embed(
                     description = f"Re-linked the Minecraft account {escape_md(minecraft_username)} to <@{user.get()['discord']}>'s profile",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
                 
             case AccountManagerActions.Delete:
                 user_id = user.get()['discord']
                 r = user.delete()
                 if not r.ok:
-                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR))
                     return
                 
                 await ctx.followup.send(embed=Embed(
                     description = f"Deleted profile for <@{user_id}>",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
                 
             case AccountManagerActions.Create:                
                 r = user.create(minecraft=minecraft_username)
                 if not r.ok:
-                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR), ephemeral=True)
+                    await ctx.followup.send(embed=Embed(description=r.error, color=Colors.ERROR))
                     return
                 
                 user.whitelist_approve(ctx.user.id)
@@ -207,4 +207,4 @@ class ClockAPI(commands.Cog):
                 await ctx.followup.send(embed=Embed(
                     description = f"Created profile for <@{user.get()['discord']}>\nAttached Minecraft Account: `{user.get()['minecraft']}`",
                     color = Colors.OK
-                ), ephemeral=True)
+                ))
