@@ -311,12 +311,13 @@ class ClockworkCoreAdapter:
         """
         Kick a player from the server.
         """
-        self.send(
-            packetId = CWPackets.KICK,
-            data = {
-                "username": username,
-            }
-        )
+        # self.send(
+        #     packetId = CWPackets.KICK,
+        #     data = {
+        #         "username": username,
+        #     }
+        # )
+        logger.error(f"Kick player is not implemented in CWCore API")
         
     def handle_login(self, packet, data):
         if data.get("login") == "ok":

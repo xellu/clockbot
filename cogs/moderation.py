@@ -1,6 +1,6 @@
-import discord
 from discord.ext import commands, tasks
-from discord import app_commands
+from discord import app_commands, Embed
+import discord as _discord
 
 from mdbb import DB, Config, Bot, Colors, CommandLogger
 
@@ -10,11 +10,10 @@ from core.templates.UserTemplate import WLStatus
 from core.templates.PunishmentTemplate import WarnTemplate, KickTemplate, BanTemplate
 
 from core import WORD_BLACKLIST
-from core.utils import parse_time, escape_md, get_mc_username
+from core.utils import parse_time, escape_md, get_mc_username, get_mc_uuid
 from core.users import UserManager
 
 import time
-import datetime
 
 class Moderation(commands.Cog):
     def __init__(self):
@@ -32,6 +31,8 @@ class Moderation(commands.Cog):
             return
         
         CWCore.event.register("chat.message", self.on_minecraft_message)
+        CWCore.event.register("player.join", self.on_minecraft_join)
+        
         self.warn_loop.start()
     
     #automod warning system
@@ -81,12 +82,12 @@ class Moderation(commands.Cog):
     
     #helpers
     async def is_exempt(self, user: UserManager) -> bool:
-        # member = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_member(user.get()["discord"])
-        # if not member:
-        #     return False
+        member = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_member(user.get()["discord"])
+        if not member:
+            return False
         
-        # for role in member.roles:
-        #     if role.id in Config.get("AUTOMOD.IGNORE"): return True
+        for role in member.roles:
+            if role.id in Config.get("AUTOMOD.IGNORE"): return True
         return False
             
     #processing functions for punishments
@@ -111,7 +112,7 @@ class Moderation(commands.Cog):
         
         CommandLogger.warn(f"Warning issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         await self.auto_mod_channel.send(
-            embed=discord.Embed(
+            embed=Embed(
                 title = "Warning",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
                             f"**Moderator:** {moderator or 'AutoMod'}\n"
@@ -167,7 +168,7 @@ class Moderation(commands.Cog):
         
         CommandLogger.warn(f"Kick issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         await self.auto_mod_channel.send(
-            embed=discord.Embed(
+            embed=Embed(
                 title = "Kick",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
                             f"**Moderator:** {moderator or 'AutoMod'}\n"
@@ -219,13 +220,13 @@ class Moderation(commands.Cog):
         
         CommandLogger.warn(f"Ban issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         await self.auto_mod_channel.send(
-            embed=discord.Embed(
+            embed=Embed(
                 title = "Ban",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
                             f"**Moderator:** {moderator or 'AutoMod'}\n"
                             f"**Reason:** `{reason}`\n"
                             f"**Expires at:** {'<t:' + str(int(ban['expires_at'])) + ':R>' if ban['expires_at'] else 'Permanent'}",
-                color = Colors.WARNING
+                color = Colors.ERROR
             )
             .set_footer(text=f"ID: {ban['id']}")
             .set_author(
@@ -249,3 +250,202 @@ class Moderation(commands.Cog):
                 await member.remove_roles(Config.get("WHITELIST.MEMBERSHIP.ROLE"))
     
     
+    #commands-------
+    @app_commands.command(name="mod-history", description="View the punishment history of a user")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(discord="Discord user to check", minecraft="Minecraft username to check")
+    async def mod_history(self, ctx: _discord.Interaction, discord: _discord.User = None, minecraft: str = None):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed( description = "Please provide either a Discord user or a Minecraft username.", color = Colors.ERROR ))
+            return
+        
+        await ctx.response.defer()
+        
+        if discord: user = UserManager(discord=discord.id)
+        elif minecraft: user = UserManager(minecraft=get_mc_uuid(minecraft))
+        
+        if not user.is_valid():
+            await ctx.followup.send(embed=Embed(
+                description = "User not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        punishments = DB.get("clockbot").mod.find({"user": user.get()["discord"]})
+        
+        if not punishments:
+            await ctx.followup.send(embed=Embed(
+                description = "No history found for this user",
+                color = Colors.OK
+            ))
+            return
+        
+        out = []
+        for p in punishments:
+            active = True if p.get('expires_at') is None or p['expires_at'] > time.time() else False
+            if p["type"] == "kick": active = False  # Kicks are always considered expired
+            
+            duration = "Forever" if p.get('expires_at') is None else parse_time(int(p['expires_at'] - p['created_at']))
+            
+            out.append(f"""{"`❗ ACTIVE`" if active else "`✅ EXPIRED`"} **{p['type'].capitalize()} for {duration}** - ID: {p['id']}\n> Issued at <t:{int(p['created_at'])}:F> by {self.bot.get_user(p['moderator']).mention if p.get('moderator') else '`AutoMod`'}\n> Reason: `{p['reason']}`""")
+
+        embed = Embed(
+            title = f"Punishment History for {get_mc_username(user.get()['minecraft'])}",
+            description = "\n\n".join(out),
+            color = Colors.DEFAULT
+        )
+        embed.set_footer(text=f"Total: {len(out)} punishments")
+        embed.set_author(
+            name = ctx.user.display_name,
+            icon_url = ctx.user.display_avatar.url
+        )
+        await ctx.followup.send(embed=embed)
+        
+    @app_commands.command(name="mod-clear", description="Clear all punishments for a user")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(discord="Discord user to clear", minecraft="Minecraft username to clear")
+    async def mod_clear(self, ctx: _discord.Interaction, discord: _discord.User = None, minecraft: str = None):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed( description = "Please provide either a Discord user or a Minecraft username.", color = Colors.ERROR ))
+            return
+        
+        await ctx.response.defer()
+        
+        if discord: user = UserManager(discord=discord.id)
+        elif minecraft: user = UserManager(minecraft=get_mc_uuid(minecraft))
+        
+        if not user.is_valid():
+            await ctx.followup.send(embed=Embed(
+                description = "User not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        DB.get("clockbot").mod.delete_many({"user": user.get()["discord"]})
+        
+        await ctx.followup.send(embed=Embed(
+            description = f"Cleared all punishments for {get_mc_username(user.get()['minecraft'])}",
+            color = Colors.OK
+        ))
+        
+    @app_commands.command(name="mod-undo", description="Undo a punishment for a user")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(punishment_id="ID of the punishment to undo")
+    async def mod_undo(self, ctx: _discord.Interaction, punishment_id: str):
+        res = DB.get("clockbot").mod.find_one({"id": punishment_id})
+        if not res:
+            await ctx.response.send_message(embed=Embed(
+                description = "Punishment not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        DB.get("clockbot").mod.delete_one({"id": punishment_id})
+        await ctx.response.send_message(embed=Embed(
+            description = f"Undid punishment `{punishment_id}` for user {get_mc_username(UserManager(discord=res['user']).get()['minecraft'])}",
+            color = Colors.OK
+        ))
+        
+    @app_commands.command(name="mod-warn", description="Warn a user in the minecraft server")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(discord="Discord user to warn", minecraft="Minecraft username to warn", reason="Reason for the warning")
+    async def mod_warn(self, ctx: _discord.Interaction, discord: _discord.User = None, minecraft: str = None, reason: str = "No reason provided"):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed( description = "Please provide either a Discord user or a Minecraft username.", color = Colors.ERROR ))
+            return
+        
+        await ctx.response.defer()
+        
+        if discord: user = UserManager(discord=discord.id)
+        elif minecraft: user = UserManager(minecraft=get_mc_uuid(minecraft))
+        
+        if not user.is_valid():
+            await ctx.followup.send(embed=Embed(
+                description = "User not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        await self.process_warning(user, reason, ctx.user.id)
+        
+        await ctx.followup.send(embed=Embed(
+            description = f"Warned {get_mc_username(user.get()['minecraft'])}",
+            color = Colors.OK
+        ))
+        
+    @app_commands.command(name="mod-kick", description="Kick a user from the minecraft server")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(discord="Discord user to kick", minecraft="Minecraft username to kick", reason="Reason for the kick")
+    async def mod_kick(self, ctx: _discord.Interaction, discord: _discord.User = None, minecraft: str = None, reason: str = "No reason provided"):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed( description = "Please provide either a Discord user or a Minecraft username.", color = Colors.ERROR ))
+            return
+        
+        await ctx.response.defer()
+        
+        if discord: user = UserManager(discord=discord.id)
+        elif minecraft: user = UserManager(minecraft=get_mc_uuid(minecraft))
+        
+        if not user.is_valid():
+            await ctx.followup.send(embed=Embed(
+                description = "User not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        await self.process_kick(user, reason, ctx.user.id)
+        
+        await ctx.followup.send(embed=Embed(
+            description = f"Kicked {get_mc_username(user.get()['minecraft'])} from the server",
+            color = Colors.OK
+        ))
+        
+    @app_commands.command(name="mod-ban", description="Ban a user from the minecraft server")
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(*Config.get("AUTOMOD.ADMINS"))
+    @app_commands.describe(discord="Discord user to ban", minecraft="Minecraft username to ban", reason="Reason for the ban", expire_in="Time for the ban to expire")
+    @app_commands.choices(expire_in=[
+        app_commands.Choice(name="Permanent", value=-1),
+        app_commands.Choice(name="1 hour", value=3600),
+        app_commands.Choice(name="6 hours", value=21600),
+        app_commands.Choice(name="12 hours", value=43200),
+        app_commands.Choice(name="1 day", value=86400),
+        app_commands.Choice(name="3 days", value=259200),
+        app_commands.Choice(name="1 week", value=604800),
+        app_commands.Choice(name="2 weeks", value=1209600),
+        app_commands.Choice(name="1 month", value=2592000),
+        app_commands.Choice(name="3 months", value=7776000),
+        app_commands.Choice(name="6 months", value=15552000),
+        app_commands.Choice(name="1 year", value=31536000),
+    ])
+    async def mod_ban(self, ctx: _discord.Interaction, discord: _discord.User = None, minecraft: str = None, reason: str = "No reason provided", expire_in: int = 0):
+        if not discord and not minecraft:
+            await ctx.response.send_message(embed=Embed( description = "Please provide either a Discord user or a Minecraft username.", color = Colors.ERROR ))
+            return
+        
+        await ctx.response.defer()
+        
+        if discord: user = UserManager(discord=discord.id)
+        elif minecraft: user = UserManager(minecraft=get_mc_uuid(minecraft))
+        
+        if expire_in == -1: expire_in = None
+        
+        if not user.is_valid():
+            await ctx.followup.send(embed=Embed(
+                description = "User not found",
+                color = Colors.ERROR
+            ))
+            return
+        
+        await self.process_ban(user, reason, ctx.user.id, expire_in)
+        
+        await ctx.followup.send(embed=Embed(
+            description = f"Banned {get_mc_username(user.get()['minecraft'])} from the server",
+            color = Colors.OK
+        ))
+        

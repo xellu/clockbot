@@ -45,4 +45,5 @@ ConfigTemplate = {
     "AUTOMOD.BAN.EXPIRE": 60 * 60 * 12, #time in seconds after which a ban expires (default: 12 hours) 
     "AUTOMOD.IGNORE": [], #list of role ids to ignore in automod checks 
     "AUTOMOD.ANNOUNCE.CHANNEL": 0, #channel id for automod announcements
+    "AUTOMOD.ADMINS": [], #list of role ids that are allowed to use moderation commands
 }
