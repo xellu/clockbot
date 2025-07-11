@@ -112,6 +112,7 @@ class Moderation(commands.Cog):
         DB.get("clockbot").mod.insert_one(warn)
         
         CommandLogger.warn(f"Warning issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
+        reference_text = f"\n\n**Reference:** `{reference}`" if reference else ""
         await self.auto_mod_channel.send(
             embed=Embed(
                 title = "Warning",
@@ -119,7 +120,7 @@ class Moderation(commands.Cog):
                             f"**Moderator:** {moderator or 'AutoMod'}\n"
                             f"**Reason:** `{reason}`\n"
                             f"**Expires at:** <t:{int(warn['expires_at'])}:R>"
-                            f"{'\n\n**Reference:** `' + reference + '`' if reference else ''}",
+                            f"{reference_text}",
                             
                 color = Colors.WARNING 
             )
