@@ -42,6 +42,7 @@ class Moderation(commands.Cog):
             await self.process_warning(
                 warn["user"],
                 warn["reason"],
+                moderator=warn.get("moderator", None),
                 reference = warn.get("reference", None)
             )
             self.warn_queue.remove(warn)
@@ -296,10 +297,6 @@ class Moderation(commands.Cog):
             color = Colors.DEFAULT
         )
         embed.set_footer(text=f"Total: {len(out)} punishments")
-        embed.set_author(
-            name = ctx.user.display_name,
-            icon_url = ctx.user.display_avatar.url
-        )
         await ctx.followup.send(embed=embed)
         
     @app_commands.command(name="mod-clear", description="Clear all punishments for a user")

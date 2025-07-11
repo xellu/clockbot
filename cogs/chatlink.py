@@ -1,6 +1,5 @@
 from discord.ext import commands, tasks
 from discord import app_commands, Embed
-import json
 import time
 import re
 
@@ -8,6 +7,7 @@ from mdbb import Bot, Config, CommandLogger, Colors, DB
 from core import WORD_BLACKLIST
 from core.utils import get_mc_username, get_mc_uuid, random_str, parse_time, escape_md
 from core.users import UserManager
+from core.templates.PunishmentTemplate import WarnTemplate
 
 from plugins.cwcore import CWCore, CWChatMessage
 
@@ -47,7 +47,9 @@ class ChatLink(commands.Cog):
         self.queue_loop.start()
         
         self.commands = {
+            CLCommand("help", "Show available commands", [], self.cmd_help),
             CLCommand("seen", "Check when was a player last seen", [CLCArgs("player")], self.cmd_seen),
+            CLCommand("warn", "Warn a player", [CLCArgs("player"), CLCArgs("*reason")], self.cmd_warn),
         }
         
         CWCore.event.register("chat.message", self.on_chat_message)
@@ -116,9 +118,30 @@ class ChatLink(commands.Cog):
         
         # return f"{author['name']}⚠️"
         return author['name']
+    
+    def is_staff(self, author):
+        user = UserManager(minecraft=author["uuid"])
+        if not user.is_valid():
+            return False
         
-    def cmd_seen(self, *args):
-        if not args: return "No player specified"
+        member = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_member(user.get()["discord"])
+        if not member:
+            return False
+        
+        for role in member.roles:
+            if role.id in Config.get("AUTOMOD.ADMINS"):
+                return True
+        return False
+    
+    def cmd_help(self, author, *args):
+        out = []
+        for cmd in self.commands:
+            out.append(f"!{cmd.name} - {cmd.description}")
+        
+        return "Available Commands:\n" + "\n".join(out) if out else "No commands available"
+        
+    def cmd_seen(self, author, *args):
+        if not args: return "Usage: !seen <player>"
         player = args[0]
         CommandLogger.warn(f"ChatLink: Seen command for {player}")
         
@@ -138,6 +161,36 @@ class ChatLink(commands.Cog):
             diff = time.time() - seen.meta
             return f"This player was last seen {parse_time(diff)} ago"
             
+    def cmd_warn(self, author, *args):
+        if len(args) < 2:
+            return "Usage: !warn <player> <reason>"
+        
+        if not self.is_staff(author):
+            return "Insufficient permissions"
+        
+        
+        player = args[0]
+        reason = " ".join(args[1:])
+        CommandLogger.warn(f"ChatLink: Warn command for {player} with reason: {reason}")
+        
+        
+        moderator = UserManager(minecraft=get_mc_uuid(author["uuid"]))
+        user = UserManager(minecraft=get_mc_uuid(player))
+        
+        if not user.is_valid():
+            return f"Player not found"
+        
+        mod = Bot.cogs.get("Moderation")
+        if not mod:
+            return "Moderation util is not loaded"
+        
+        mod.warn_queue.append({
+            "user": user,
+            "reason": reason,
+            "moderator": moderator.get()["discord"]
+        })
+        return f"Issued a warning to {player}"
+        
         
         
     def process_command(self, command, author):
@@ -151,8 +204,8 @@ class ChatLink(commands.Cog):
         
         for cmd in self.commands:
             if cmd.name == name:
-                CommandLogger.warn(f"{name}: {args}")
-                r = cmd.func(*args)
+                CommandLogger.debug(f"{name}: {args}")
+                r = cmd.func(author, *args)
                 if r: return f"{name.capitalize()}: {r}"
                 return
         
@@ -183,7 +236,7 @@ class ChatLink(commands.Cog):
         
         if data["content"].startswith("!"):
             try:
-                r = self.process_command(data["content"], data["author"]["name"])                
+                r = self.process_command(data["content"], data["author"])                
                 if r == False:
                     CWCore.chat_passthrough(CWChatMessage(0, "ClockBot", "Unknown Command"))
                     return
