@@ -247,7 +247,7 @@ class Moderation(commands.Cog):
                 author = "AutoMod",
                 content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been banned from the server\nReason: {reason}\nExpires in: {parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else 'Permanent'}\n\n========================\n"
             ))
-            CWCore.kick_player(user.get()["minecraft"], reason)
+            CWCore.kick_player(user.get()["minecraft"], f"You've been banned for {parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else 'permanently'}.\nReason: {reason}")
             
         if expire_in is None:
             user.whitelist_remove(self.bot.user.id)
