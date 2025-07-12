@@ -315,6 +315,7 @@ class ClockworkCoreAdapter:
             packetId = CWPackets.KICK,
             data = {
                 "uuid": uuid,
+                "reason": reason
             }
         )
         # logger.error(f"Kick player is not implemented in CWCore API")
