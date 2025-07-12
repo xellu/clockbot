@@ -25,7 +25,10 @@ class CWPackets:
     PLAYER_LEAVE = 5
     WL_ADD = 6
     WL_REMOVE = 7
+    WL_LIST = 8
+    BROADCAST = 9
     KICK = 69
+    
     
     MIGRATION_NOTICE = 777
 
@@ -65,6 +68,7 @@ class ClockworkCoreAdapter:
             2: self.handle_status, #status
             4: self.handle_join, #player join
             5: self.handle_leave, #player leave
+            8: self.handle_wl_list, #whitelist list
         }
         
         self.logged_in = False
@@ -294,18 +298,15 @@ class ClockworkCoreAdapter:
             }
         )
         
-    def send_migration_notice(self, uuid, username, code) -> None:
+    def request_whitelist(self) -> None:
         """
-        Send a migration notice to the Clockwork Core API.
+        Request the whitelist from the Clockwork Core API.
         """
         self.send(
-            packetId = CWPackets.MIGRATION_NOTICE,
-            data = {
-                "uuid": uuid,
-                "username": username,
-                "code": code
-            }
+            packetId = CWPackets.WL_LIST,
+            data = {}
         )
+        
         
     def kick_player(self, uuid: str, reason: str) -> None:
         """
@@ -319,6 +320,17 @@ class ClockworkCoreAdapter:
             }
         )
         # logger.error(f"Kick player is not implemented in CWCore API")
+        
+    def broadcast(self, message: list[dict]) -> None:
+        """
+        Broadcast a /tellraw message to all players on the server.
+        """
+        self.send(
+            packetId = CWPackets.BROADCAST,
+            data = {
+                "content": json.dumps(message),
+            }
+        )
         
     def handle_login(self, packet, data):
         if data.get("login") == "ok":
@@ -348,6 +360,12 @@ class ClockworkCoreAdapter:
         
     def handle_leave(self, packet, data):
         self.event.emit("player.leave", data)
+        
+    def handle_wl_list(self, packet, data):
+        """
+        Handle the whitelist list packet.
+        """
+        self.event.emit("whitelist.list", data)
     
         
 CWCore = ClockworkCoreAdapter()

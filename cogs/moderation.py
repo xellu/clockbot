@@ -451,3 +451,7 @@ class Moderation(commands.Cog):
             color = Colors.OK
         ))
         
+    @app_commands.command(name="test", description="Test command for AutoMod")
+    @app_commands.checks.has_permissions(administrator=True)
+    async def test(self, ctx: _discord.Interaction):
+        CWCore.broadcast(["",{"text":"This is a ","color":"red"},{"text":"test","underlined":True,"color":"red"}])
