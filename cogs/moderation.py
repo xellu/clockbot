@@ -8,6 +8,7 @@ from plugins.cwcore import CWCore, CWChatMessage
 
 from core.templates.UserTemplate import WLStatus
 from core.templates.PunishmentTemplate import WarnTemplate, KickTemplate, BanTemplate
+from core.templates.Messages import warn_message, kick_message, ban_message
 
 from core import WORD_BLACKLIST
 from core.utils import parse_time, escape_md, get_mc_username, get_mc_uuid
@@ -144,12 +145,19 @@ class Moderation(commands.Cog):
         if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.BAN"):
             await self.process_ban(user, f"Exceeded warning limit ({Config.get('AUTOMOD.WARNINGS.BAN')})", moderator)
             
-        if user.get_seen().meta == -2:
-            CWCore.chat_passthrough(CWChatMessage(
-                message_id=0,
-                author = "AutoMod",
-                content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been warned\nReason: {reason}\nExpires in: {parse_time(int(warn['expires_at']) - time.time())}\n\n========================\n"
-            ))
+        
+        mod_ign = UserManager(discord=moderator) if moderator else None
+        if mod_ign and mod_ign.is_valid():
+            mod_ign = get_mc_username(mod_ign.get()['minecraft'])
+            
+        CWCore.broadcast(
+            warn_message(
+                target = get_mc_username(user.get()['minecraft']),
+                reason = reason,
+                moderator = mod_ign or "AutoMod",
+                expire = parse_time(int(warn['expires_at']) - time.time()) if warn['expires_at'] else "Never"
+            )
+        )
             
     async def process_kick(self, user: UserManager, reason: str = "No reason provided", moderator: int = None):
         if not user.is_valid():
@@ -187,13 +195,26 @@ class Moderation(commands.Cog):
             )
         )
         
+        mod_ign = UserManager(discord=moderator) if moderator else None
+        if mod_ign and mod_ign.is_valid():
+            mod_ign = get_mc_username(mod_ign.get()['minecraft'])
+            
+        
         if user.get_seen().meta == -2:    
-            CWCore.chat_passthrough(CWChatMessage(
-                message_id=0,
-                author = "AutoMod",
-                content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been kicked from the server\nReason: {reason}\n\n========================\n"
-            ))
+            # CWCore.chat_passthrough(CWChatMessage(
+            #     message_id=0,
+            #     author = "AutoMod",
+            #     content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been kicked from the server\nReason: {reason}\n\n========================\n"
+            # ))
             CWCore.kick_player(user.get()["minecraft"], reason)
+            
+        CWCore.broadcast(
+            kick_message(
+                target = get_mc_username(user.get()['minecraft']),
+                reason = reason,
+                moderator = mod_ign or "AutoMod"
+            )
+        )
             
     
     async def process_ban(self, user: UserManager, reason: str = "No reason provided", moderator: int = None, expire_in: int = 0):
@@ -241,12 +262,12 @@ class Moderation(commands.Cog):
             )
         )
         
+        mod_ign = UserManager(discord=moderator) if moderator else None
+        if mod_ign and mod_ign.is_valid():
+            mod_ign = get_mc_username(mod_ign.get()['minecraft'])
+            
+        
         if user.get_seen().meta == -2:
-            CWCore.chat_passthrough(CWChatMessage(
-                message_id=0,
-                author = "AutoMod",
-                content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been banned from the server\nReason: {reason}\nExpires in: {parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else 'Permanent'}\n\n========================\n"
-            ))
             CWCore.kick_player(user.get()["minecraft"], f"You've been banned for {parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else 'permanently'}.\nReason: {reason}")
             
         if expire_in is None:
@@ -255,6 +276,14 @@ class Moderation(commands.Cog):
             if member:
                 await member.remove_roles(Config.get("WHITELIST.MEMBERSHIP.ROLE"))
     
+        CWCore.broadcast(
+            ban_message(
+                target = get_mc_username(user.get()['minecraft']),
+                reason = reason,
+                moderator = mod_ign or "AutoMod",
+                expire = parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else "Never"
+            )
+        )
     
     #commands-------
     @app_commands.command(name="mod-history", description="View the punishment history of a user")
@@ -450,8 +479,3 @@ class Moderation(commands.Cog):
             description = f"Banned {get_mc_username(user.get()['minecraft'])} from the server",
             color = Colors.OK
         ))
-        
-    @app_commands.command(name="test", description="Test command for AutoMod")
-    @app_commands.checks.has_permissions(administrator=True)
-    async def test(self, ctx: _discord.Interaction):
-        CWCore.broadcast(["",{"text":"This is a ","color":"red"},{"text":"test","underlined":True,"color":"red"}])
