@@ -46,7 +46,7 @@ def warn_message(target, reason, moderator, expire):
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "white",
+        "color": "black",
         "text": "\u2588"
     },
     {
@@ -65,7 +65,7 @@ def warn_message(target, reason, moderator, expire):
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "white",
+        "color": "black",
         "text": "\u2588"
     },
     {
@@ -92,7 +92,7 @@ def warn_message(target, reason, moderator, expire):
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "white",
+        "color": "black",
         "text": "\u2588"
     },
     {
@@ -126,7 +126,7 @@ def warn_message(target, reason, moderator, expire):
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "white",
+        "color": "black",
         "text": "\u2588"
     },
     {
