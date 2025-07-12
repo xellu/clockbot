@@ -190,7 +190,7 @@ class Moderation(commands.Cog):
                 author = "AutoMod",
                 content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been kicked from the server\nReason: {reason}\n\n========================\n"
             ))
-            CWCore.kick_player(get_mc_username(user.get()["minecraft"]), reason)
+            CWCore.kick_player(user.get()["minecraft"], reason)
             
     
     async def process_ban(self, user: UserManager, reason: str = "No reason provided", moderator: int = None, expire_in: int = 0):
@@ -243,7 +243,7 @@ class Moderation(commands.Cog):
                 author = "AutoMod",
                 content = f"\n========================\n\n{get_mc_username(user.get()['minecraft'])} has been banned from the server\nReason: {reason}\nExpires in: {parse_time(int(ban['expires_at']) - time.time()) if ban['expires_at'] else 'Permanent'}\n\n========================\n"
             ))
-            CWCore.kick_player(get_mc_username(user.get()["minecraft"]), reason)
+            CWCore.kick_player(user.get()["minecraft"], reason)
             
         if expire_in is None:
             user.whitelist_remove(self.bot.user.id)
