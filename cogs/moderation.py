@@ -110,6 +110,7 @@ class Moderation(commands.Cog):
         })
         
         DB.get("clockbot").mod.insert_one(warn)
+        moderator_formatted = f"<@{moderator}>" if moderator else "AutoMod"
         
         CommandLogger.warn(f"Warning issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         reference_text = f"\n\n**Reference:** `{reference}`" if reference else ""
@@ -117,7 +118,7 @@ class Moderation(commands.Cog):
             embed=Embed(
                 title = "Warning",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
-                            f"**Moderator:** {moderator or 'AutoMod'}\n"
+                            f"**Moderator:** {moderator_formatted}\n"
                             f"**Reason:** `{reason}`\n"
                             f"**Expires at:** <t:{int(warn['expires_at'])}:R>"
                             f"{reference_text}",
@@ -167,13 +168,15 @@ class Moderation(commands.Cog):
         })
         
         DB.get("clockbot").mod.insert_one(kick)
+        moderator_formatted = f"<@{moderator}>" if moderator else "AutoMod"
+
         
         CommandLogger.warn(f"Kick issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         await self.auto_mod_channel.send(
             embed=Embed(
                 title = "Kick",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
-                            f"**Moderator:** {moderator or 'AutoMod'}\n"
+                            f"**Moderator:** {moderator_formatted}\n"
                             f"**Reason:** `{reason}`",
                 color = Colors.WARNING
             )
@@ -219,13 +222,14 @@ class Moderation(commands.Cog):
         })
         
         DB.get("clockbot").mod.insert_one(ban)
+        moderator_formatted = f"<@{moderator}>" if moderator else "AutoMod"
         
         CommandLogger.warn(f"Ban issued to {user.get()['minecraft']} ({user.get()['discord']}) by {moderator or 'AutoMod'}: {reason}")
         await self.auto_mod_channel.send(
             embed=Embed(
                 title = "Ban",
                 description = f"**User:** {escape_md(get_mc_username(user.get()['minecraft']))} <@{user.get()['discord']}>\n"
-                            f"**Moderator:** {moderator or 'AutoMod'}\n"
+                            f"**Moderator:** {moderator_formatted}\n"
                             f"**Reason:** `{reason}`\n"
                             f"**Expires at:** {'<t:' + str(int(ban['expires_at'])) + ':R>' if ban['expires_at'] else 'Permanent'}",
                 color = Colors.ERROR
