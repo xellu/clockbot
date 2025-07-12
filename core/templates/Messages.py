@@ -17,7 +17,7 @@ def warn_message(target, reason, moderator, expire):
     return [
     "",
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
     },
     {
@@ -42,15 +42,15 @@ def warn_message(target, reason, moderator, expire):
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "black",
+        "color": "white",
         "text": "\u2588"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
@@ -61,15 +61,15 @@ def warn_message(target, reason, moderator, expire):
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "black",
+        "color": "white",
         "text": "\u2588"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
@@ -88,15 +88,15 @@ def warn_message(target, reason, moderator, expire):
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "black",
+        "color": "white",
         "text": "\u2588"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
@@ -115,22 +115,22 @@ def warn_message(target, reason, moderator, expire):
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588\u2588\u2588\u2588\u2588 "
     },
     {
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
-        "color": "black",
+        "color": "white",
         "text": "\u2588"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588"
     },
     {
@@ -142,7 +142,7 @@ def warn_message(target, reason, moderator, expire):
         "text": "\n"
     },
     {
-        "color": "gold",
+        "color": "yellow",
         "text": "\u2588\u2588\u2588\u2588\u2588\u2588\u2588"
     },
     {
