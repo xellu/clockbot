@@ -42,7 +42,7 @@ ConfigTemplate = {
     "AUTOMOD.WARNINGS.KICK": 3, #maximum number of warnings before a user is kicked
     "AUTOMOD.WARNINGS.BAN": 5, #maximum number of warnings before a user is banned
     "AUTOMOD.WARNINGS.EXPIRE": 60 * 60 * 24, #time in seconds after which warnings expire (default: 1 days)
-    "AUTOMOD.BAN.EXPIRE": 60 * 60 * 12, #time in seconds after which a ban expires (default: 12 hours) 
+    "AUTOMOD.BANS.EXPIRE": 60 * 60 * 12, #time in seconds after which a ban expires (default: 12 hours) 
     "AUTOMOD.IGNORE": [], #list of role ids to ignore in automod checks 
     "AUTOMOD.ANNOUNCE.CHANNEL": 0, #channel id for automod announcements
     "AUTOMOD.ADMINS": [], #list of role ids that are allowed to use moderation commands
