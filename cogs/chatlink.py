@@ -10,6 +10,7 @@ from core.users import UserManager
 from core.templates.PunishmentTemplate import WarnTemplate
 
 from plugins.cwcore import CWCore, CWChatMessage
+from plugins.word_blacklist import FlagMan
 
 #xaero-waypoint:<name>:<initial>:<x>:<y>:<z>:<color_id>:<disabled>:<type>:<dimension_id>
 WP_REGEX = re.compile(r"xaero-waypoint:(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+)")
@@ -65,10 +66,7 @@ class ChatLink(commands.Cog):
                 await self.channel.send(embed=msg.embed)
                 continue
             
-            for word in msg.content.split(" "):
-                if word.lower() in WORD_BLACKLIST:
-                    msg.content = msg.content.replace(word, "❤️"*len(word))
-            
+            msg.content = FlagMan.censor(msg.content)
             await self.channel.send(msg.content.replace("@", "@\u200b"))
                 
         self.queue.clear()

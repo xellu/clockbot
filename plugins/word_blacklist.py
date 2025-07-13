@@ -20,7 +20,7 @@ class WordBlacklistManager:
             "0": "o",
         }
     
-    def match(self, text: str) -> str | None:
+    def match(self, text: str) -> list[str] | None:
         """
         Check if the text contains any blacklisted words.
         Returns the first matched word or None if no match is found.
@@ -34,17 +34,42 @@ class WordBlacklistManager:
         leet = self.find(leet)
         normal = self.find(normal)
         
-        return leet if leet else normal if normal else None
+        return leet + normal if leet or normal else None
         
-    def find(self, words: list[str]) -> str | None:
+    def censor(self, text: str) -> str:
+        """
+        Censor blacklisted words in the text.
+        Replaces blacklisted words with hearts.
+        """
+        text = self.de_unicode(text)
+        
+        leet = self.de_leet(text)
+        leet = self.tokenize(leet)
+        normal = self.tokenize(text)
+
+        leet = self.find(leet)
+        normal = self.find(normal)
+
+        if leet:
+            for word in leet:
+                text = text.replace(word, "❤️" * len(word))
+        
+        if normal:
+            for word in normal:
+                text = text.replace(word, "❤️" * len(word))
+        
+        return text
+        
+    def find(self, words: list[str]) -> list[str] | None:
         """
         Find the first blacklisted word in the list of words.
         Returns the word if found, otherwise None.
         """
+        out = []
         for word in words:
             if word.lower() in WORD_BLACKLIST:
-                return word
-        return None
+                out.append(word)
+        return out if out else None
         
     def de_unicode(self, text: str) -> str:
         """
