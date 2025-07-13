@@ -5,12 +5,12 @@ import discord as _discord
 from mdbb import DB, Config, Bot, Colors, CommandLogger
 
 from plugins.cwcore import CWCore, CWChatMessage
+from plugins.word_blacklist import FlagMan
 
 from core.templates.UserTemplate import WLStatus
 from core.templates.PunishmentTemplate import WarnTemplate, KickTemplate, BanTemplate
 from core.templates.Messages import warn_message, kick_message, ban_message
 
-from core import WORD_BLACKLIST
 from core.utils import parse_time, escape_md, get_mc_username, get_mc_uuid
 from core.users import UserManager
 
@@ -39,6 +39,8 @@ class Moderation(commands.Cog):
     #automod warning system
     @tasks.loop(seconds=5)
     async def warn_loop(self):
+        if not self.enabled: return
+        
         for warn in self.warn_queue:
             await self.process_warning(
                 warn["user"],
@@ -70,17 +72,27 @@ class Moderation(commands.Cog):
     def on_minecraft_message(self, msg: dict):
         if not self.enabled: return
         
-        for word in msg['content'].split(" "):
-            if word.lower() in WORD_BLACKLIST:
-                user = UserManager(minecraft=msg['author']['uuid'])
-                CommandLogger.warn(f"Flagged message from {msg['author']['name']} ({msg['author']['uuid']}) for '{word}': {msg['content']}")
+        res = FlagMan.match(msg['content'])
+        if res:
+            user = UserManager(minecraft=msg['author']['uuid'])
+            CommandLogger.warn(f"Flagged message from {msg['author']['name']} ({msg['author']['uuid']}) for '{res}': {msg['content']}")
+            self.warn_queue.append({
+                "user": user,
+                "reason": "Inappropriate language",
+                "reference": f"Flagged '{res}' in '{msg['content']}'"
+            })
+            
+        # for word in msg['content'].split(" "):
+        #     if word.lower() in WORD_BLACKLIST:
+        #         user = UserManager(minecraft=msg['author']['uuid'])
+        #         CommandLogger.warn(f"Flagged message from {msg['author']['name']} ({msg['author']['uuid']}) for '{word}': {msg['content']}")
                 
-                self.warn_queue.append({
-                    "user": user,
-                    "reason": f"Inappropriate language",
-                    "reference": f"Flagged {word} in '{msg['content']}'"
-                })
-                return
+        #         self.warn_queue.append({
+        #             "user": user,
+        #             "reason": f"Inappropriate language",
+        #             "reference": f"Flagged {word} in '{msg['content']}'"
+        #         })
+        #         return
     
     #helpers
     async def is_exempt(self, user: UserManager) -> bool:
@@ -139,12 +151,6 @@ class Moderation(commands.Cog):
             "expires_at": {"$gt": time.time()}
         })
         
-        if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.KICK") <= Config.get("AUTOMOD.WARNINGS.BAN"):
-            await self.process_kick(user, f"Exceeded warning limit ({Config.get('AUTOMOD.WARNINGS.KICK')})", moderator)
-        
-        if len(list(active_warns)) >= Config.get("AUTOMOD.WARNINGS.BAN"):
-            await self.process_ban(user, f"Exceeded warning limit ({Config.get('AUTOMOD.WARNINGS.BAN')})", moderator)
-            
         
         mod_ign = UserManager(discord=moderator) if moderator else None
         if mod_ign and mod_ign.is_valid():
@@ -158,6 +164,14 @@ class Moderation(commands.Cog):
                 expire = parse_time(int(warn['expires_at']) - time.time()) if warn['expires_at'] else "Never"
             )
         )
+        
+        active_warns = len(list(active_warns))
+        if active_warns % Config.get("AUTOMOD.WARNINGS.KICK") == 0: #if the user has reached the kick threshold, kick them
+            await self.process_kick(user, reason=f"Too many warnings ({active_warns}/{Config.get('AUTOMOD.WARNINGS.KICK')})", moderator=moderator)
+            return
+        
+        if active_warns % Config.get("AUTOMOD.WARNINGS.BAN") == 0: #if the user has reached the ban threshold, ban them
+            await self.process_ban(user, reason=f"Too many warnings ({active_warns}/{Config.get('AUTOMOD.WARNINGS.BAN')})", moderator=moderator)
             
     async def process_kick(self, user: UserManager, reason: str = "No reason provided", moderator: int = None):
         if not user.is_valid():

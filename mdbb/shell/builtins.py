@@ -83,15 +83,9 @@ def clear_actions_command(ctx):
     DB.get("clockbot").actions.delete_many({})
     return CommandResponse("Cleared all actions from the database")
 
-# @Shell.command("test.migrate", "Test migration command", "test.migrate <username>")
-# def test_migrate_command(ctx, *args, **kwargs):
-#     from plugins.cwcore import CWCore
-#     from core.utils import get_mc_uuid
+@Shell.command("clearmod", "Clears all moderation history from the database", "clearmod")
+def clear_mod_command(ctx):
+    from core import DB
     
-#     username = "Xelluu"
-    
-#     CWCore.send_migration_notice(
-#         uuid = get_mc_uuid(username),
-#         username = username,
-#         code = "test"
-#     )
+    DB.get("clockbot").mod.delete_many({})
+    return CommandResponse("Cleared all moderation history from the database")    
