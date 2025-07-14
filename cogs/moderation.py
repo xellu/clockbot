@@ -288,7 +288,8 @@ class Moderation(commands.Cog):
             user.whitelist_remove(self.bot.user.id)
             member = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_member(user.get()["discord"])
             if member:
-                await member.remove_roles(Config.get("WHITELIST.MEMBERSHIP.ROLE"))
+                role = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_role(Config.get("WHITELIST.MONITOR.ROLE"))
+                await member.remove_roles(role)
     
         CWCore.broadcast(
             ban_message(
