@@ -66,7 +66,6 @@ class ChatLink(commands.Cog):
                 await self.channel.send(embed=msg.embed)
                 continue
             
-            msg.content = FlagMan.censor(msg.content)
             await self.channel.send(msg.content.replace("@", "@\u200b"))
                 
         self.queue.clear()
@@ -248,7 +247,7 @@ class ChatLink(commands.Cog):
                 
             if r != None: return 
         
-        self.queue.append(CLMessage(f"**{user}:** {data['content']}"))
+        self.queue.append(CLMessage(f"**{user}:** {FlagMan.censor(data['content'])}"))
         
     def on_player_join(self, data):
         """
