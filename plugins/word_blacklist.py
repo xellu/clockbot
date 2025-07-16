@@ -41,11 +41,11 @@ class WordBlacklistManager:
         Censor blacklisted words in the text.
         Replaces blacklisted words with hearts.
         """
-        text = self.de_unicode(text)
+        normal = self.de_unicode(text)
         
-        leet = self.de_leet(text)
+        leet = self.de_leet(normal)
         leet = self.tokenize(leet)
-        normal = self.tokenize(text)
+        normal = self.tokenize(normal)
 
         leet = self.find(leet)
         normal = self.find(normal)
