@@ -83,7 +83,7 @@ class Status(commands.Cog):
             embed.set_author(name=ctx.user.name, icon_url=ctx.user.display_avatar.url)
             
             if ping:
-                await channel.send(f"@here", embed=embed)
+                await channel.send(f"<@&1405226979673899049>", embed=embed)
             else:
                 await channel.send(embed=embed)
                 
@@ -104,7 +104,7 @@ class Status(commands.Cog):
         )
         
         if ping:
-            await channel.send(f"@here", embed=embed)
+            await channel.send(f"<@&1405226979673899049>", embed=embed)
         else:
             await channel.send(embed=embed)
             
