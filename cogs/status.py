@@ -4,6 +4,7 @@ from discord import app_commands, Embed
 from mdbb import Bot, Config, CommandLogger, Colors, EventBus
 
 from core.utils import escape_md
+from core.users import UserManager
 from plugins.cwcore import CWCore
 
 import enum
@@ -24,7 +25,9 @@ class Status(commands.Cog):
         if not Config.get("MODULES.STATUS"):
             CommandLogger.warning("Module disabled: Status")
             return
+        
         self.update_status.start()
+        CWCore.event.register("player.join", self.on_player_join)
     
     #SERVER STATUS DISPLAY----------------------------------
     @tasks.loop(seconds=300)
@@ -123,6 +126,28 @@ class Status(commands.Cog):
         await ctx.response.send_message(embed=Embed(description="Shutting down...", color=Colors.DEFAULT))
         EventBus.emit("shutdown", f"Shutdown requested by {ctx.user.name} ({ctx.user.id})")
         
+    def on_player_join(self, player):
+        if not self.maintenance:
+            return
+            
+        if self.is_staff(player):
+            return
+        
+        CWCore.kick_player(player["uuid"])
+        
+    def is_staff(self, author):
+        user = UserManager(minecraft=author["uuid"])
+        if not user.is_valid():
+            return False
+        
+        member = self.bot.get_guild(Config.get("WHITELIST.MONITOR.GUILD")).get_member(user.get()["discord"])
+        if not member:
+            return False
+        
+        for role in member.roles:
+            if role.id in Config.get("AUTOMOD.ADMINS"):
+                return True
+        return False
         
     #SERVER INFO----------------------------------
     @app_commands.command(name="tps", description="Shows the current TPS (Ticks per Second) of the server")
