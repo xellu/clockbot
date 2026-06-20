@@ -6,14 +6,14 @@ from discord.ext import commands
 from src.lib.Discord import Bot, AddCog
 from src.lib.Colors import *
 from src.lib.Mongo import Mongo
+from src.lib.User import UserManager
+from src.lib.Clockwork import CW
 
 from nautica import Services, Config
 from plugins.Clockwork import Clockwork, CWChatMessage
 from plugins.CWEvents import ChatMessageEvent, PlayerJoinEvent, PlayerLeaveEvent
 
 WP_REGEX = re.compile(r"xaero-waypoint:(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+?):(.+)")
-
-CW: Clockwork = Services.get("Clockwork")
 
 class ChatLink(commands.Cog):
     def __init__(self, bot):
@@ -60,6 +60,9 @@ class ChatLink(commands.Cog):
         
     async def on_player_join(self, event: PlayerJoinEvent):
         channel = await self.inGameChannel()
+        u = UserManager(minecraft=event.player.uuid)
+        if u.is_valid(): u.just_seen()
+        
         
         await channel.send(embed=Embed(
             description = f"**{event.player.name_escaped}** has joined",

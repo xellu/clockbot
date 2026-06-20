@@ -1,16 +1,13 @@
 import time
 
-from nautica import Services
+from nautica import Services, Config
 
 from plugins.Clockwork import Clockwork
 from src.lib.Util import get_mc_username, get_mc_uuid
 from src.lib.Mongo import Mongo
 from src.lib.models.User import UserTemplate
 from src.lib.models.Whitelist import WLStatus
-
-CWCore: Clockwork = Services.get("Clockwork")
-
-
+from src.lib.Clockwork import CW as CWCore
 
 
 class UserActionResponse:
@@ -27,7 +24,7 @@ class UserManager:
         
         Parameters:
             discord (int): Discord ID of the user.
-            minecraft (str): Minecraft username of the user.
+            minecraft (str): Minecraft UUID of the user.
         
         Raises:
             ValueError: If neither discord nor minecraft is provided.
@@ -39,7 +36,7 @@ class UserManager:
         self.user = None
         
         if not discord and not minecraft:
-            raise ValueError("Discord ID or Minecraft username must be provided")
+            raise ValueError("Discord ID or Minecraft UUID must be provided")
         
         self.load()
         
@@ -66,8 +63,8 @@ class UserManager:
         
         return UserActionResponse(True)
     
-    def get(self):
-        return self.user
+    def get(self, key: str|None = None):
+        return self.user if key is None else self.user.get(key)
         
     def link(self, minecraft):
         """Link a Minecraft account to the user."""

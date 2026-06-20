@@ -12,6 +12,7 @@ from src.lib.Views import WelcomeView
 async def on_ready():
     Logger.ok(f"Logged in as '{Bot.user.name}#{Bot.user.discriminator}'")
     await InitCogs()
+    await Bot.tree.sync(guild=Config("clockbot")["servers.discord"])
     
 @Bot.event
 async def on_member_join(member: Member):
