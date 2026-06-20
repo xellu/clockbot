@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 Bot: commands.Bot = commands.Bot(
+    help_command=None,
     command_prefix = "!",
     intents = discord.Intents.all()
 )

@@ -1,2 +1,3 @@
 discord = "1.0.5"
 logadapter = "1.0.1"
+mongodb = "1.1.0"
