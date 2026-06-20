@@ -1,0 +1,33 @@
+[nautica]
+debug = true # Enables tools and endpoints useful of debugging
+
+[services]
+shell = true # Enables the interactive shell
+http = true # Enables the HTTP Server service
+discord = true # Enable Discord
+
+[http]
+host = "127.0.0.1" # Use 0.0.0.0 to expose your app, 127.0.0.1 to keep local
+port = 8100 # Port to host the app on, by default is set to 8100
+realIPHeader = "" # Name of the header which has the real ip, e.g. X-Real-IP, CF-Connecting-IP (if behind proxy), set to empty to use requesting machine's IP instead
+logRequests = true # Logs all successful requests. If disabled, only error requests are displayed, and boosts performance.
+includeSchema = true # If enabled, will include the request schema in error replies
+websockets = false # Enable support for WebSockets
+
+[http.static]
+enabled = false # Set to true if you wish to send static files from a directory
+endpoint = "/static" # Endpoint by which the static directory will be reached
+directory = "/path/to/directory" # Files in this directory will be accessible by sending a GET request to endpoint above
+
+[http.cors]
+enabled = false # Enable Cross-Origin Resource Sharing (refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
+origins = ["*"] # List of allowed origins (Access-Control-Allow-Origin), empty list blocks all origins
+methods = ["*"] # List of allowed methods (Access-Control-Request-Method)
+headers = ["*"] # List of allowed headers (Access-Control-Request-Headers)
+exposeHeaders = [] # List of exposed headers
+credentials = false # Allow cookies and auth headers (Authorization) to be sent with cross-origin requests
+
+[shell]
+systemdMode = false # Disables console input, to work as a systemd service
+gui = false # Whether to use textual TUI renderer
+guiTheme = "frost" # Available themes are: frost (default), catppuccin, nord, gruvbox, tokyo-night, textual-dark, solarized-light, atom-one-dark, atom-one-light
