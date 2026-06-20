@@ -5,6 +5,8 @@ debug = true # Enables tools and endpoints useful of debugging
 shell = true # Enables the interactive shell
 http = true # Enables the HTTP Server service
 discord = true # Enable Discord
+logadapter = true # Enable LogAdapter
+clockconfig = true # Enable ClockConfig
 
 [http]
 host = "127.0.0.1" # Use 0.0.0.0 to expose your app, 127.0.0.1 to keep local

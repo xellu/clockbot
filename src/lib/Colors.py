@@ -1,0 +1,4 @@
+INFO = 0xdf8e1d
+OK = 0x40a02b
+WARN = 0xfe640b
+ERROR = 0xd20f39
