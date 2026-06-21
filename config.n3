@@ -24,7 +24,7 @@ endpoint = "/static" # Endpoint by which the static directory will be reached
 directory = "static" # Files in this directory will be accessible by sending a GET request to endpoint above
 
 [http.cors]
-enabled = false # Enable Cross-Origin Resource Sharing (refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
+enabled = true # Enable Cross-Origin Resource Sharing (refer to https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
 origins = ["*"] # List of allowed origins (Access-Control-Allow-Origin), empty list blocks all origins
 methods = ["*"] # List of allowed methods (Access-Control-Request-Method)
 headers = ["*"] # List of allowed headers (Access-Control-Request-Headers)

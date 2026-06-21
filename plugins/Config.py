@@ -25,9 +25,17 @@ class ClockConfig(Service):
                 .add("chatlink.channelId", 0, comment="Channel to show in-game messages in")
                 .add("status.stateChannelId", 0, comment="Voice channel to display state in (i.e. Online, Offline, Maintenance...)")
                 .add("status.tpsChannelId", 0, comment="Voice channel to show tps in")
+         
+                .add("web.name", "My Server", comment="Title to display on your website")
+                .add("web.color", "#fad64a", comment="Primary color on the website")
+                .add("web.mcIp", "example.com", comment="The minecraft server's IP")
+                .add("web.discordInvite", "https://discord.gg/example", comment="Invite to your discord server")
+                
+                .add("discordOAuth.clientId", 0, comment="https://discord.com/developers/applications")
+                .add("discordOAuth.clientSecret", "", comment="Get under Overview > OAuth2; make sure to add (YOUR DOMAIN)/static/whitelist.html and (YOUR DOMAIN)/static/admin.html to Redirects")
+                # .add("discordOAuth.url", "https://discord.com/oauth2/authorize?client_id=<YOUR CLIENT ID HERE>&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8100%2Fstatic%2Fwhitelist.html&scope=identify", comment="Make sure the redirect url points to (your domain)/static/whitelist.html, and has scope 'identify'")
                 
                 .build()
         )
-        
         
 Service.Export(ClockConfig, depends_on=["Discord:after"])
