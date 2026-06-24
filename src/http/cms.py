@@ -10,6 +10,6 @@ async def branding():
         mcIp = Config("clockbot")["web.mcIp"],
         discordInvite = Config("clockbot")["web.discordInvite"],
         
-        discordClientId = Config("clockbot")["discordOAuth.clientId"],
+        discordClientId = str(Config("clockbot")["discordOAuth.clientId"]),
         domain = Config("clockbot")["servers.self"],
     )

@@ -10,9 +10,13 @@ from src.lib.Views import WelcomeView
 
 @Bot.event
 async def on_ready():
-    Logger.ok(f"Logged in as '{Bot.user.name}#{Bot.user.discriminator}'")
-    await InitCogs()
-    await Bot.tree.sync(guild=Config("clockbot")["servers.discord"])
+    try:
+        Logger.ok(f"Logged in as '{Bot.user.name}#{Bot.user.discriminator}'")
+        await InitCogs()
+        
+        await Bot.tree.sync()
+    except Exception as e:
+        Logger.trace(e)
     
 @Bot.event
 async def on_member_join(member: Member):

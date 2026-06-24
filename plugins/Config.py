@@ -32,7 +32,7 @@ class ClockConfig(Service):
                 .add("web.discordInvite", "https://discord.gg/example", comment="Invite to your discord server")
                 
                 .add("discordOAuth.clientId", 0, comment="https://discord.com/developers/applications")
-                .add("discordOAuth.clientSecret", "", comment="Get under Overview > OAuth2; make sure to add (YOUR DOMAIN)/static/whitelist.html and (YOUR DOMAIN)/static/admin.html to Redirects")
+                .add("discordOAuth.clientSecret", "", comment="Get under Overview > OAuth2; make sure to add (YOUR DOMAIN)/static/auth.html to Redirects")
                 # .add("discordOAuth.url", "https://discord.com/oauth2/authorize?client_id=<YOUR CLIENT ID HERE>&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8100%2Fstatic%2Fwhitelist.html&scope=identify", comment="Make sure the redirect url points to (your domain)/static/whitelist.html, and has scope 'identify'")
                 
                 .build()

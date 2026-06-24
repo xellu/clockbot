@@ -9,6 +9,7 @@ logadapter = true # Enable LogAdapter
 clockconfig = true # Enable ClockConfig
 clockwork = true # Enable Clockwork
 mongodb = true # Enable MongoDB
+nauth = true # Enable NAuth
 
 [http]
 host = "127.0.0.1" # Use 0.0.0.0 to expose your app, 127.0.0.1 to keep local
